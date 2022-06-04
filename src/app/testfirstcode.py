@@ -3,15 +3,12 @@ import psycopg2
 from fastapi import FastAPI
 import requests as req
 
-# from config import config
-
 
 def connect():
     """ Connect to the PostgreSQL database server """
+    # from some website
     conn = None
     try:
-        # read connection parameters
-        # params = config()
 
         # connect to the PostgreSQL server
         print('Connecting to the PostgreSQL database...')
@@ -39,6 +36,7 @@ def connect():
 
 
 def close_connection(conn, cur):
+    # from some website. Originally in connect() function
     try:
         # close the communication with the PostgreSQL
         cur.close()
@@ -55,29 +53,43 @@ def close_connection(conn, cur):
 def execute_queries(cur, osm_id):
     query = f'Select "avoidedCount" from "SimRaAPI_osmwayslegs" where "osmId"={osm_id}'
     cur.execute(query)
-    print(f"for the OSM id {osm_id} we got the following avoided counts")
+    print(f"for the legs with the OSM id {osm_id} we got the following avoided counts")
     print(cur.fetchall())
 
 
 def testApi():
-    test = req.get("http://127.0.0.1:8000")
-    intermediary = test.json()["elements"]
+    # Structure of the json we get atm:
+    # Json dict contains one key "features"
+    # "Features" values is a list with one dict for every infrastructure type
+    # Each of these dicts have their identifier as a key (Example key: '[highway = trunk]') and the value of this key is
+    # a list with a dict for every street that corresponds to this type
+    # This dict has the osm-id under the key "id"
 
-    osm_ids = []
-    for item in intermediary:
-        osm_ids.append(item["id"])
+    request = req.get("http://127.0.0.1:8000")
+    requested_data = request.json()["features"]
 
-    return osm_ids
+    osm_ids_per_infrastructure = {}
+    for infrastructure_dict in requested_data:
+
+        for infra_type, streets in infrastructure_dict.items():
+            osm_ids = []
+            for street_data in streets:
+                osm_ids.append(street_data["id"])
+            osm_ids_per_infrastructure[infra_type] = osm_ids
+
+    return osm_ids_per_infrastructure
 
 
 if __name__ == '__main__':
-    osm_ids = testApi()
-
     conn, cur = connect()
 
-    for osm_id in osm_ids:
-        print(f"Working on osm_id {osm_id}: ############################")
-        execute_queries(cur, osm_id)
+    osm_ids_per_infrastructure = testApi()
+
+    for infra, osm_ids in osm_ids_per_infrastructure.items():
+        print(f"WORKING ON ALL OSM_IDS WITH INFRASTRUCTURE TYPE {infra}. THERE ARE {len(osm_ids)} IDS FOR THIS "
+              f"INFRASTRUCTURE TYPE")
+        for osm_id in osm_ids:
+            execute_queries(cur, osm_id)
 
     close_connection(conn, cur)
 

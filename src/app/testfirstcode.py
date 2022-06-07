@@ -14,21 +14,13 @@ def execute_queries(cur, osm_id):
 
 
 def query_area(north, east, south, west):
-    if north > south:
-        if east > west:
-            body = {
-                "ne": str(north)+","+str(east),
-                "sw": str(north-0.01)+","+str(east-0.01)
-            }
-            response = req.post("http://127.0.0.1:8000/area", json=body)
+    body = {
+        "ne": str(north) + "," + str(east),
+        "sw": str(north-0.1) + "," + str(east-0.1)
+    }
+    response = req.post("http://127.0.0.1:8000/area", json=body)
 
-            return response.json(), north, east-0.01
-
-        else:
-            return None, north-0.01, None
-
-    else:
-        return None, None, None
+    return response.json()
 
 
 def test_api():
@@ -42,27 +34,18 @@ def test_api():
     osm_ids_per_infrastructure = {}
 
     north, east, south, west = area.find_borders()
-    n, e = north, east
 
-    while True:
-        requested_data, n, e = query_area(n, e, south, west)
+    requested_data = query_area(north, east, south, west)
 
-        if e is None:
-            e = east
-            continue
+    print(requested_data)
 
-        if n is None:
-            break
-
-        print(requested_data)
-
-        for infrastructure_dict in requested_data["features"]:
-
-            for infra_type, streets in infrastructure_dict.items():
-                osm_ids = []
-                for street_data in streets:
-                    osm_ids.append(street_data["id"])
-                    osm_ids_per_infrastructure[infra_type] = osm_ids
+    for infrastructure_dict in requested_data["features"]:
+        for infra_type, streets in infrastructure_dict.items():
+            print(infra_type)
+            osm_ids = []
+            for street_data in streets:
+                osm_ids.append(street_data["id"])
+                osm_ids_per_infrastructure[infra_type] = osm_ids
 
     return osm_ids_per_infrastructure
 
@@ -71,6 +54,8 @@ if __name__ == '__main__':
     conn, cur = db.connect()
 
     osm_ids_per_infrastructure = test_api()
+
+    print(osm_ids_per_infrastructure)
 
     for infra, osm_ids in osm_ids_per_infrastructure.items():
         print(f"WORKING ON ALL OSM_IDS WITH INFRASTRUCTURE TYPE {infra}. THERE ARE {len(osm_ids)} IDS FOR THIS "

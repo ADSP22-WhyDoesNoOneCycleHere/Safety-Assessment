@@ -18,14 +18,14 @@ def query_area(north, east, south, west):
         if east > west:
             body = {
                 "ne": str(north)+","+str(east),
-                "sw": str(north-0.001)+","+str(east-0.001)
+                "sw": str(north-0.01)+","+str(east-0.01)
             }
             response = req.post("http://127.0.0.1:8000/area", json=body)
 
-            return response.json(), north, east-0.001
+            return response.json(), north, east-0.01
 
         else:
-            return None, north-0.001, None
+            return None, north-0.01, None
 
     else:
         return None, None, None

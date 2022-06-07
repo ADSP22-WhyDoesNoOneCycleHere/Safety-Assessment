@@ -5,20 +5,40 @@ import requests as req
 import db
 import area
 
+infra_types = []
+infra_dict = {}  # Dict to which the different counts are saved
 
-def execute_queries(cur, osm_id):
-    query = f'Select "avoidedCount" from "SimRaAPI_osmwayslegs" where "osmId"={osm_id}'
+
+def execute_queries(cur, osm_id, infra_type):
+
+    # TODO: Look into what counts are actually important for the scores!
+    query = f'Select "avoidedCount", "chosenCount", "normalIncidentCount", "scaryIncidentCount"' \
+            f' from "SimRaAPI_osmwayslegs" where "osmId"={osm_id}'
+
     cur.execute(query)
-    print(f"for the legs with the OSM id {osm_id} we got the following avoided counts")
-    print(cur.fetchall())
+
+    for count in cur.fetchall():
+        infra_dict[infra_type]["avoided_count"] += count[0]
+        infra_dict[infra_type]["chosen_count"] += count[1]
+        infra_dict[infra_type]["normal_incident_count"] += count[2]
+        infra_dict[infra_type]["scary_incident_count"] += count[3]
+        infra_dict[infra_type]["leg_count"] += 1
 
 
 def query_area(north, east, south, west):
+
     body = {
         "ne": str(north) + "," + str(east),
-        "sw": str(north-0.1) + "," + str(east-0.1)
+        "sw": str(south) + "," + str(west)
     }
     response = req.post("http://127.0.0.1:8000/area", json=body)
+
+    return response.json()
+
+
+# Use this function when testing new features; query_area() queries ALL of Berlin
+def test():
+    response = req.get("http://127.0.0.1:8000/")
 
     return response.json()
 
@@ -35,13 +55,13 @@ def test_api():
 
     north, east, south, west = area.find_borders()
 
-    requested_data = query_area(north, east, south, west)
+    # Uncomment the line below to query the whole relevant area (program takes ages to complete)
+    # requested_data = query_area(north, east, south, west)
 
-    print(requested_data)
+    requested_data = test()
 
     for infrastructure_dict in requested_data["features"]:
         for infra_type, streets in infrastructure_dict.items():
-            print(infra_type)
             osm_ids = []
             for street_data in streets:
                 osm_ids.append(street_data["id"])
@@ -55,12 +75,23 @@ if __name__ == '__main__':
 
     osm_ids_per_infrastructure = test_api()
 
-    print(osm_ids_per_infrastructure)
+    for infra_type, osm_ids in osm_ids_per_infrastructure.items():
 
-    for infra, osm_ids in osm_ids_per_infrastructure.items():
-        print(f"WORKING ON ALL OSM_IDS WITH INFRASTRUCTURE TYPE {infra}. THERE ARE {len(osm_ids)} IDS FOR THIS "
+        infra_types.append(infra_type)
+
+        infra_dict[infra_type] = {}
+        infra_dict[infra_type]["avoided_count"] = 0
+        infra_dict[infra_type]["chosen_count"] = 0
+        infra_dict[infra_type]["normal_incident_count"] = 0
+        infra_dict[infra_type]["scary_incident_count"] = 0
+        infra_dict[infra_type]["leg_count"] = 0
+
+        print(f"WORKING ON ALL OSM_IDS WITH INFRASTRUCTURE TYPE {infra_type}. THERE ARE {len(osm_ids)} IDS FOR THIS "
               f"INFRASTRUCTURE TYPE")
+
         for osm_id in osm_ids:
-            execute_queries(cur, osm_id)
+            execute_queries(cur, osm_id, infra_type)
+
+        print(infra_dict[infra_type])
 
     db.close_connection(conn, cur)

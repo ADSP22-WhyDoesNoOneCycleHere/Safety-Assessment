@@ -1,6 +1,7 @@
 import db
 
 
+# Function for finding the outer bounds of the legs saved to the db
 def find_borders():
     conn, cur = db.connect()
 

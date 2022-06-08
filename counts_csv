@@ -1,0 +1,38 @@
+infra_type, avoided_count, chosen_count, normal_incident_count, scary_incident_count, leg_count
+[highway = trunk], 0, 0, 0, 0, 231
+[highway = primary], 5153, 1509, 69, 3, 20505
+[highway = secondary], 9610, 10803, 275, 41, 62259
+[highway = tertiary], 4684, 7027, 141, 18, 39141
+[highway = unclassified], 45, 159, 10, 4, 9513
+[highway = residential], 6318, 12254, 245, 20, 217866
+[highway = residential][~'^parking:.*$'~'.'][!cycleway], 764, 2333, 27, 4, 13605
+[highway = motorway_link], 0, 0, 0, 0, 2088
+[highway = trunk_link], 0, 0, 0, 0, 57
+[highway = primary_link], 32, 12, 0, 0, 501
+[highway = secondary_link], 22, 105, 0, 0, 762
+[highway = tertiary_link], 3, 0, 0, 0, 144
+[highway = living_street], 267, 583, 10, 0, 12993
+[highway = service], 713, 1422, 27, 2, 229505
+[highway = pedestrian], 51, 183, 0, 0, 2514
+[highway = track], 39, 96, 2, 0, 36520
+[highway = road], 0, 0, 0, 0, 3
+[highway = footway][bicycle = yes], 1299, 2414, 37, 0, 33147
+[highway = footway][bicycle = no], 0, 24, 0, 0, 18284
+[highway = footway], 1893, 4751, 73, 1, 388137
+[highway = bridleway], 0, 0, 0, 0, 1734
+[highway = steps], 111, 176, 4, 0, 19686
+[highway = corridor], 0, 0, 0, 0, 723
+[highway = path], 857, 1460, 8, 2, 72259
+[footway = sidewalk][bicycle = yes], 0, 0, 0, 0, 243
+[footway = sidewalk][bicycle = no], 0, 0, 0, 0, 123
+[footway = sidewalk], 27, 238, 4, 0, 10026
+[footway = crossing][bicycle = yes], 39, 15, 0, 0, 270
+[footway = crossing][bicycle = no], 0, 0, 0, 9
+[footway = crossing], 63, 114, 1, 0, 9252
+[highway = cycleway], 335, 718, 13, 0, 4050
+[cycleway = lane], 47, 10, 2, 0, 321
+[cycleway = track], 3, 63, 0, 0, 363
+[cycleway = share_busway], 0, 0, 0, 0, 0
+[cycleway = shared_lane], 24, 0, 0, 0, 75
+[busway = lane], 57, 0, 1, 0, 186
+[highway = construction], 9, 36, 1, 1, 1542

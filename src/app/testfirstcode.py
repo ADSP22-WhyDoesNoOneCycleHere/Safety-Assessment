@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from pprint import pprint
 
+import pandas as pd
 import requests as req
 import db
 import area
@@ -25,7 +26,6 @@ def execute_queries(cur, osm_id, infra_type):
         infra_dict[infra_type]["chosen_count"] += count[1]
         infra_dict[infra_type]["normal_incident_count"] += count[2]
         infra_dict[infra_type]["scary_incident_count"] += count[3]
-        infra_dict[infra_type]["leg_count"] += 1
         # the first time an unchecked id occurs -> add way length to the complete length
         # check for first time
         tmp_osm_id = count[4]
@@ -107,5 +107,8 @@ if __name__ == '__main__':
             execute_queries(cur, osm_id, infra_type)
 
         print(infra_dict[infra_type])
+
+    df = pd.DataFrame.from_dict(infra_dict, orient="index")
+    df.to_csv("../../test.csv")
 
     db.close_connection(conn, cur)

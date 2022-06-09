@@ -1,6 +1,7 @@
 from requests import request
 import requests as req
 import osmapi as osm
+import math
 
 api = osm.OsmApi()
 API_KEY = "3e9d076d-594f-4be2-96da-71368a80ac24"
@@ -32,6 +33,18 @@ def get_length_between_coordinates(from_lat, from_lon, to_lat, to_lon):
 
 # input: osmId from database
 # return: length of way in meters
+def get_length2(osm_id):
+    node_from, node_to = get_nodes(osm_id)
+    node_from_lat, node_from_lon = get_node_coordinates(node_from)
+    node_to_lat, node_to_lon = get_node_coordinates(node_to)
+
+    dx = 71.5 * (node_to_lon - node_to_lon)
+    dy = 111.3 * (node_from_lat - node_to_lat)
+
+    distance = math.sqrt(dx * dx + dy * dy)
+
+    return distance
+
 def get_length(osm_id):
     #print(f'try to get length from id: {osm_id}')
     node_from, node_to = get_nodes(osm_id)

@@ -31,7 +31,7 @@ def execute_queries(cur, osm_id, infra_type):
         tmp_osm_id = count[4]
        
         if not tmp_osm_id in analysed_osm_ids:
-            infra_dict[infra_type]["length"] += testlength.get_length(tmp_osm_id)
+            infra_dict[infra_type]["length"] += testlength.get_length2(tmp_osm_id)
             analysed_osm_ids.append(tmp_osm_id)
 
         infra_dict[infra_type]["count"] += count[5]

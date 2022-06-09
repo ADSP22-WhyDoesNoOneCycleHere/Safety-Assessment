@@ -1,9 +1,8 @@
 #!/usr/bin/python
-from pprint import pprint
-
 import requests as req
 import db
 import area
+import pandas as pd
 
 infra_types = []
 infra_dict = {}  # Dict to which the different counts are saved
@@ -12,7 +11,7 @@ infra_dict = {}  # Dict to which the different counts are saved
 def execute_queries(cur, osm_id, infra_type):
 
     # TODO: Look into what counts are actually important for the scores!
-    query = f'Select "avoidedCount", "chosenCount", "normalIncidentCount", "scaryIncidentCount"' \
+    query = f'Select "avoidedCount", "chosenCount", "normalIncidentCount", "scaryIncidentCount", "count"' \
             f' from "SimRaAPI_osmwayslegs" where "osmId"={osm_id}'
 
     cur.execute(query)
@@ -22,7 +21,8 @@ def execute_queries(cur, osm_id, infra_type):
         infra_dict[infra_type]["chosen_count"] += count[1]
         infra_dict[infra_type]["normal_incident_count"] += count[2]
         infra_dict[infra_type]["scary_incident_count"] += count[3]
-        infra_dict[infra_type]["leg_count"] += 1
+        infra_dict[infra_type]["rides_taken"] += count[4]
+
 
 
 def query_area(north, east, south, west):
@@ -84,7 +84,7 @@ if __name__ == '__main__':
         infra_dict[infra_type]["chosen_count"] = 0
         infra_dict[infra_type]["normal_incident_count"] = 0
         infra_dict[infra_type]["scary_incident_count"] = 0
-        infra_dict[infra_type]["leg_count"] = 0
+        infra_dict[infra_type]["rides_taken"] = 0
 
         print(f"WORKING ON ALL OSM_IDS WITH INFRASTRUCTURE TYPE {infra_type}. THERE ARE {len(osm_ids)} IDS FOR THIS "
               f"INFRASTRUCTURE TYPE")
@@ -93,5 +93,9 @@ if __name__ == '__main__':
             execute_queries(cur, osm_id, infra_type)
 
         print(infra_dict[infra_type])
+
+    df = pd.DataFrame.from_dict(infra_dict, orient='index')
+    df.rename(columns={"":"infra_type"}, inplace=True)
+    df.to_csv("../../test.csv")
 
     db.close_connection(conn, cur)

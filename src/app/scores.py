@@ -6,12 +6,6 @@ import math
 if __name__ == '__main__':
     counts_by_infra = pd.read_csv("../../test_counts.csv", index_col=0)
 
-    # add columns for scores we want to calculate
-    #counts_by_infra[' avoided_score'] = pd.Series(np.zeros(len(counts_by_infra.index)), index=counts_by_infra.index)
-    #counts_by_infra[' chosen_score'] = pd.Series(np.zeros(len(counts_by_infra.index)), index=counts_by_infra.index)
-    #counts_by_infra[' popularity_score'] = pd.Series(np.zeros(len(counts_by_infra.index)), index=counts_by_infra.index)
-    #counts_by_infra[' mixed_popularity_score'] = pd.Series(np.zeros(len(counts_by_infra.index)), index=counts_by_infra.index)
-
     counts_by_infra['avoided_score'] = counts_by_infra.loc[:, 'avoided_count'] / counts_by_infra.loc[:, 'count']
     counts_by_infra['chosen_score'] = counts_by_infra.loc[:, 'chosen_count'] / counts_by_infra.loc[:, 'count']
     counts_by_infra['popularity_score'] = ((1 - counts_by_infra['avoided_score']) + counts_by_infra['chosen_score']) / 2

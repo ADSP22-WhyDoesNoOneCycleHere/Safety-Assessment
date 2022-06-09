@@ -4,6 +4,7 @@ from pprint import pprint
 import requests as req
 import db
 import area
+import testlength
 
 infra_types = []
 infra_dict = {}  # Dict to which the different counts are saved
@@ -12,10 +13,12 @@ infra_dict = {}  # Dict to which the different counts are saved
 def execute_queries(cur, osm_id, infra_type):
 
     # TODO: Look into what counts are actually important for the scores!
-    query = f'Select "avoidedCount", "chosenCount", "normalIncidentCount", "scaryIncidentCount"' \
+    query = f'Select "avoidedCount", "chosenCount", "normalIncidentCount", "scaryIncidentCount", "osmId", "count"' \
             f' from "SimRaAPI_osmwayslegs" where "osmId"={osm_id}'
 
     cur.execute(query)
+
+    analysed_osm_ids = []
 
     for count in cur.fetchall():
         infra_dict[infra_type]["avoided_count"] += count[0]
@@ -23,6 +26,15 @@ def execute_queries(cur, osm_id, infra_type):
         infra_dict[infra_type]["normal_incident_count"] += count[2]
         infra_dict[infra_type]["scary_incident_count"] += count[3]
         infra_dict[infra_type]["leg_count"] += 1
+        # the first time an unchecked id occurs -> add way length to the complete length
+        # check for first time
+        tmp_osm_id = count[4]
+       
+        if not tmp_osm_id in analysed_osm_ids:
+            infra_dict[infra_type]["length"] += testlength.get_length(tmp_osm_id)
+            analysed_osm_ids.append(tmp_osm_id)
+
+        infra_dict[infra_type]["count"] += count[5]
 
 
 def query_area(north, east, south, west):
@@ -85,6 +97,8 @@ if __name__ == '__main__':
         infra_dict[infra_type]["normal_incident_count"] = 0
         infra_dict[infra_type]["scary_incident_count"] = 0
         infra_dict[infra_type]["leg_count"] = 0
+        infra_dict[infra_type]["length"] = 0
+        infra_dict[infra_type]["count"] = 0
 
         print(f"WORKING ON ALL OSM_IDS WITH INFRASTRUCTURE TYPE {infra_type}. THERE ARE {len(osm_ids)} IDS FOR THIS "
               f"INFRASTRUCTURE TYPE")

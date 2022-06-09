@@ -30,7 +30,18 @@ def get_length_between_coordinates(from_lat, from_lon, to_lat, to_lon):
 
     return length
 
-# for testing
+# input: osmId from database
+# return: length of way in meters
+def get_length(osm_id):
+    #print(f'try to get length from id: {osm_id}')
+    node_from, node_to = get_nodes(osm_id)
+    node_from_lat, node_from_lon =  get_node_coordinates(node_from)
+    node_to_lat, node_to_lon =  get_node_coordinates(node_to)
+    way_length = get_length_between_coordinates(node_from_lat, node_from_lon, node_to_lat, node_to_lon)
+
+    return way_length
+
+""" # for testing
 if __name__ == "__main__":
     
     ways = [4609242, 72183527, 335462896, 335462901]
@@ -49,4 +60,4 @@ if __name__ == "__main__":
         
         print(f'way with id: {way}')
         print(f'with nodes: {node_from} -> {node_to}')
-        print(f'and length {way_length}m')
+        print(f'and length {way_length}m') """

@@ -1,0 +1,16 @@
+,avoided_count,chosen_count,normal_incident_count,scary_incident_count,leg_count,length,count
+[highway = primary],0,0,0,0,0,452.606,81
+[highway = secondary],33,6,0,0,0,50.808,147
+[highway = tertiary],0,78,0,0,0,87.75500000000001,630
+[highway = unclassified],0,0,0,0,0,383.60400000000004,0
+[highway = residential],0,0,0,0,0,9.07,0
+[highway = service],0,0,0,0,0,2462.476,240
+[highway = pedestrian],0,0,0,0,0,0.0,0
+[highway = footway][bicycle = yes],0,1,1,0,0,80.891,37
+[highway = footway][bicycle = no],0,0,0,0,0,9.451,0
+[highway = footway],0,1,2,0,0,9087.337,193
+[highway = steps],0,0,0,0,0,445.22900000000004,6
+[highway = corridor],0,0,0,0,0,0.0,0
+[highway = path],66,35,0,0,0,166.10000000000002,66
+[footway = crossing],0,0,0,0,0,473.591,18
+[highway = cycleway],18,0,0,0,0,2.375,36

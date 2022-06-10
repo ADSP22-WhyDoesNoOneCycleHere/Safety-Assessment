@@ -4,3 +4,5 @@ requests
 validators
 overpass
 geopy
+pandas
+psycopg2

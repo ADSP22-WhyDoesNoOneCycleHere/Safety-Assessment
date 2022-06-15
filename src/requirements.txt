@@ -2,6 +2,7 @@ uvicorn
 fastapi
 requests
 validators
-osmapi
+overpass
+geopy
 pandas
 psycopg2

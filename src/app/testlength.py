@@ -1,27 +1,20 @@
-from requests import request
 import requests as req
-import osmapi as osm
-import math
+import overpass
+import geopy.distance
 
-api = osm.OsmApi()
 API_KEY = "3e9d076d-594f-4be2-96da-71368a80ac24"
 BASE_URL = "https://graphhopper.com/api/1/route"
 
+
 # get start and endnode from a way by its osm way id
 def get_nodes(way_id):
-    nodes = api.WayGet(way_id)["nd"]
-    
-    return nodes[0], nodes[1]
+    api_overpass = overpass.API(endpoint="http://vm3.mcc.tu-berlin.de:8088/api/interpreter", timeout=90)
+    nodes = api_overpass.get(f"way({way_id});out body;>", verbosity='skel', responseformat='json')["elements"]
 
-# get lat and lon coordinates from osm node is
-def get_node_coordinates(node): 
-    node_dict = api.NodeGet(node)
-    lat = node_dict["lat"]
-    lon = node_dict["lon"]
-    #print(f'lat: {node_dict["lat"]}')
-    #print(f'lon: {node_dict["lon"]}')
+    print(nodes[1:])
     
-    return lat, lon
+    return nodes[1:]
+
 
 # get length between two coordinates
 # graphhopper
@@ -31,46 +24,17 @@ def get_length_between_coordinates(from_lat, from_lon, to_lat, to_lon):
 
     return length
 
-# input: osmId from database
-# return: length of way in meters
-def get_length2(osm_id):
-    node_from, node_to = get_nodes(osm_id)
-    node_from_lat, node_from_lon = get_node_coordinates(node_from)
-    node_to_lat, node_to_lon = get_node_coordinates(node_to)
-
-    dx = 71.5 * (node_to_lon - node_to_lon)
-    dy = 111.3 * (node_from_lat - node_to_lat)
-
-    distance = math.sqrt(dx * dx + dy * dy)
-
-    return distance
 
 def get_length(osm_id):
-    #print(f'try to get length from id: {osm_id}')
-    node_from, node_to = get_nodes(osm_id)
-    node_from_lat, node_from_lon =  get_node_coordinates(node_from)
-    node_to_lat, node_to_lon =  get_node_coordinates(node_to)
-    way_length = get_length_between_coordinates(node_from_lat, node_from_lon, node_to_lat, node_to_lon)
+    way_length = 0
+    nodes = get_nodes(osm_id)
+    for i in range(len(nodes)-1):
+        c1 = (nodes[i]["lat"], nodes[i]["lon"])
+        c2 = (nodes[i+1]["lat"], nodes[i+1]["lon"])
+        way_length += geopy.distance.distance(c1, c2).km
 
     return way_length
 
-""" # for testing
+
 if __name__ == "__main__":
-    
-    ways = [4609242, 72183527, 335462896, 335462901]
-
-    #node_1_lat, node_1_lon =  get_node_coordinates(27537748)
-    #node_2_lat, node_2_lon =  get_node_coordinates(27537747)
-    #get_length_between_coordinates(node_1_lat, node_1_lon, node_2_lat, node_2_lon)
-
-    #print(get_nodes(4609242))
-
-    for way in ways:
-        node_from, node_to = get_nodes(way)
-        node_from_lat, node_from_lon =  get_node_coordinates(node_from)
-        node_to_lat, node_to_lon =  get_node_coordinates(node_to)
-        way_length = get_length_between_coordinates(node_from_lat, node_from_lon, node_to_lat, node_to_lon)
-        
-        print(f'way with id: {way}')
-        print(f'with nodes: {node_from} -> {node_to}')
-        print(f'and length {way_length}m') """
+    print(get_length(25184342))

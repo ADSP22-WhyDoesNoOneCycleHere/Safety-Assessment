@@ -7,6 +7,8 @@ import db
 import area
 import testlength
 
+from app.highway import Highway
+
 infra_types = []
 infra_dict = {}  # Dict to which the different counts are saved
 
@@ -47,20 +49,13 @@ def execute_queries(cur, osm_id, infra_type):
 
 def query_area(north, east, south, west):
 
-    body = {
-        "ne": str(north) + "," + str(east),
-        "sw": str(south) + "," + str(west)
-    }
-    response = req.post("http://127.0.0.1:8000/area", json=body)
-
-    return response.json()
+    return Highway.query_area(str(south) + "," + str(west), str(north) + "," + str(east))
 
 
 # Use this function when testing new features; query_area() queries ALL of Berlin
 def test():
-    response = req.get("http://127.0.0.1:8000/")
 
-    return response.json()
+    return Highway.query_area
 
 
 def osm_ids_per_infrastructure():

@@ -26,12 +26,13 @@ def execute_queries(cur, osm_id, infra_type):
         infra_dict[infra_type]["chosen_count"] += count[1]
         infra_dict[infra_type]["normal_incident_count"] += count[2]
         infra_dict[infra_type]["scary_incident_count"] += count[3]
+        infra_dict[infra_type]["leg_count"] += 1
         # the first time an unchecked id occurs -> add way length to the complete length
         # check for first time
         tmp_osm_id = count[4]
        
         if not tmp_osm_id in analysed_osm_ids:
-            infra_dict[infra_type]["length"] += testlength.get_length2(tmp_osm_id)
+            infra_dict[infra_type]["length"] += testlength.get_length(tmp_osm_id)
             analysed_osm_ids.append(tmp_osm_id)
 
         infra_dict[infra_type]["count"] += count[5]

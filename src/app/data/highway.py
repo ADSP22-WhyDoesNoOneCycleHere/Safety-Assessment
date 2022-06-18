@@ -34,7 +34,7 @@ highway = [
             [ "[cycleway = lane]", "['cycleway:left' = lane]", "['cycleway:right' = lane]", "['cycleway:both' = lane]" ],
             [ "[cycleway = oppposite]", "['cycleway:left' = oppposite]", "['cycleway:right' = oppposite]", "['cycleway:both' = oppposite]" ],
             [ "[cycleway = opposite_lane]", "['cycleway:left' = opposite_lane]", "['cycleway:right' = opposite_lane]", "['cycleway:both' = opposite_lane]" ],
-            [ "[cycleway = track]", "['cycleway:left' = track]", "['cycleway:right' = track]", "['cycleway:both' = track]" ],
+            [ "[cycleway = separate]", "['cycleway:left' = separate]", "['cycleway:right' = separate]", "['cycleway:both' = separate]", "[cycleway = track]", "['cycleway:left' = track]", "['cycleway:right' = track]", "['cycleway:both' = track]" ],
             [ "[cycleway = opposite_track]", "['cycleway:left' = opposite_track]", "['cycleway:right' = opposite_track]", "['cycleway:both' = opposite_track]" ],
             [ "[cycleway = share_busway]", "['cycleway:left' = share_busway]", "['cycleway:right' = share_busway]", "['cycleway:both' = share_busway]" ],
             [ "[cycleway = opposite_share_busway]", "['cycleway:left' = opposite_share_busway]", "['cycleway:right' = opposite_share_busway]", "['cycleway:both' = opposite_share_busway]" ],

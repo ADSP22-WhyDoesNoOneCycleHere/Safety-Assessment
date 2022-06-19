@@ -3,11 +3,11 @@ from pprint import pprint
 
 import pandas as pd
 import requests as req
-import db
-import area
-import testlength
 
-from app.highway import Highway
+import db
+from ..calculation import area
+from ..test import testlength
+from .highway import Highway
 
 infra_types = []
 infra_dict = {}  # Dict to which the different counts are saved

@@ -64,9 +64,15 @@ def osm_ids_per_infrastructure():
 
 # function to fetch data from database for a specific part of the infrastructure types
 def database_query(infra_types_part, cur, conn) :
+    #print("--------------------------------")
+    #print("data processed by " + conn.dsn + ":")
     for infra_type, osm_ids in infra_types_part.items():
+
+        #print(infra_type, osm_ids)
+
         for osm_id in osm_ids:
             execute_queries(cur, conn, osm_id, infra_type)
+    #print("--------------------------------")
 
 if __name__ == '__main__':
     # connect databases services
@@ -79,23 +85,30 @@ if __name__ == '__main__':
     scores.initialize_score_table(cur2, conn2)
     scores.initialize_score_table(cur3, conn3)
 
+    print("Create infrastructure types.")
     infrastructure_osm_ids = osm_ids_per_infrastructure()
+    print("Created infrastructure types successfully.")
 
     start = time.time()
 
     infra_types = infrastructure_osm_ids.items()
+    #print("--------------------------------")
+    #print("All infrastructure types:")
+    #print(infra_types.mapping.keys())
+    #print("--------------------------------")
     part_size = int(len(infra_types) / NUMBER_OF_DB_SERVICES)
 
     # create threads
     threads = []
 
     # append thread that queries the data for the first part of infrastructure types
-    threads.append(Thread(target=database_query(dict(itertools.islice(infra_types, 0, part_size - 1)), cur1, conn1)))
+    threads.append(Thread(target=database_query(dict(itertools.islice(infra_types, 0, part_size)), cur1, conn1)))
     # append Thread that queries the data for the second part of infrastructure types
-    threads.append(Thread(target=database_query(dict(itertools.islice(infra_types, part_size, 2 * part_size - 1)), cur2, conn2)))
+    threads.append(Thread(target=database_query(dict(itertools.islice(infra_types, part_size, 2 * part_size)), cur2, conn2)))
     # append Thread that queries the data for the third part of infrastructure types
-    threads.append(Thread(target=database_query(dict(itertools.islice(infra_types, 2 * part_size, len(infra_types) - 1)), cur3, conn3)))
+    threads.append(Thread(target=database_query(dict(itertools.islice(infra_types, 2 * part_size, len(infra_types))), cur3, conn3)))
 
+    print("Add infrastructure type to legs and store computed scores inside the database")
     for thread in threads:
         thread.start()
 

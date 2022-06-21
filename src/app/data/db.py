@@ -8,7 +8,7 @@ def connect(port):
     try:
 
         # connect to the PostgreSQL server
-        print('Connecting to the PostgreSQL database...')
+        #print('Connecting to the PostgreSQL database...')
         conn = psycopg2.connect(
             host="localhost",
             port=str(port),
@@ -26,7 +26,7 @@ def connect(port):
         #print(type(db_version))
 
         # display the PostgreSQL database server version and port
-        print("Connected to database on port " + str(port))
+        print("Connected to PostgreSQL database on port " + str(port) + ".")
 
         return conn, cur
 
@@ -46,4 +46,4 @@ def close_connection(conn, cur, port):
     finally:
         if conn is not None:
             conn.close()
-            print('Connection closed to database on port ' + str(port))
+            print('Connection closed to database on port ' + str(port) + ".")

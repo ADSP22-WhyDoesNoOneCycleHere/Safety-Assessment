@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import itertools
 import time
+from threading import Thread
 
 from src.app.data import db
 from src.app.calculation import area
@@ -85,13 +86,21 @@ if __name__ == '__main__':
     infra_types = infrastructure_osm_ids.items()
     part_size = int(len(infra_types) / NUMBER_OF_DB_SERVICES)
 
-    # TODO run this 3 functions parallel
-    # query first part
-    database_query(dict(itertools.islice(infra_types, 0, part_size - 1)), cur1, conn1)
-    # query second part
-    database_query(dict(itertools.islice(infra_types, part_size, 2 * part_size - 1)), cur2, conn2)
-    # query third part
-    database_query(dict(itertools.islice(infra_types, 2 * part_size, len(infra_types) - 1)), cur3, conn3)
+    # create threads
+    threads = []
+
+    # append thread that queries the data for the first part of infrastructure types
+    threads.append(Thread(target=database_query(dict(itertools.islice(infra_types, 0, part_size - 1)), cur1, conn1)))
+    # append Thread that queries the data for the second part of infrastructure types
+    threads.append(Thread(target=database_query(dict(itertools.islice(infra_types, part_size, 2 * part_size - 1)), cur2, conn2)))
+    # append Thread that queries the data for the third part of infrastructure types
+    threads.append(Thread(target=database_query(dict(itertools.islice(infra_types, 2 * part_size, len(infra_types) - 1)), cur3, conn3)))
+
+    for thread in threads:
+        thread.start()
+
+    for thread in threads:
+        thread.join()
 
     end = time.time()
 

@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import itertools
 import time
 
 from src.app.data import db
@@ -8,8 +9,12 @@ from src.app.data.highway import Highway
 
 leg = {}  # Dict to which the different counts are saved
 
+DB_PORT_1 = 5432
+DB_PORT_2 = 5433
+DB_PORT_3 = 5434
+NUMBER_OF_DB_SERVICES = 3
 
-def execute_queries(cur, osm_id, infra_type):
+def execute_queries(cur, conn, osm_id, infra_type):
     query = f'Select "id", "avoidedCount", "chosenCount", "normalIncidentCount", ' \
             f'"scaryIncidentCount", "count", ST_Length(geom::geography) as length' \
             f' from "SimRaAPI_osmwayslegs" where "osmId"={osm_id} and count > 0;'
@@ -56,21 +61,43 @@ def osm_ids_per_infrastructure():
 
     return infrastructure_osm_ids
 
+# function to fetch data from database for a specific part of the infrastructure types
+def database_query(infra_types_part, cur, conn) :
+    for infra_type, osm_ids in infra_types_part.items():
+        for osm_id in osm_ids:
+            execute_queries(cur, conn, osm_id, infra_type)
 
 if __name__ == '__main__':
-    conn, cur = db.connect()
-    scores.initialize_score_table(cur, conn)
+    # connect databases services
+    conn1, cur1 = db.connect(DB_PORT_1)
+    conn2, cur2 = db.connect(DB_PORT_2)
+    conn3, cur3 = db.connect(DB_PORT_3)
+
+    # setup new table for each database service
+    scores.initialize_score_table(cur1, conn1)
+    scores.initialize_score_table(cur2, conn2)
+    scores.initialize_score_table(cur3, conn3)
 
     infrastructure_osm_ids = osm_ids_per_infrastructure()
 
     start = time.time()
 
-    for infra_type, osm_ids in infrastructure_osm_ids.items():
-        for osm_id in osm_ids:
-            execute_queries(cur, osm_id, infra_type)
+    infra_types = infrastructure_osm_ids.items()
+    part_size = int(len(infra_types) / NUMBER_OF_DB_SERVICES)
+
+    # TODO run this 3 functions parallel
+    # query first part
+    database_query(dict(itertools.islice(infra_types, 0, part_size - 1)), cur1, conn1)
+    # query second part
+    database_query(dict(itertools.islice(infra_types, part_size, 2 * part_size - 1)), cur2, conn2)
+    # query third part
+    database_query(dict(itertools.islice(infra_types, 2 * part_size, len(infra_types) - 1)), cur3, conn3)
 
     end = time.time()
 
     print(f'Time taken python: {end - start}')
 
-    db.close_connection(conn, cur)
+    # disconnect from database services
+    db.close_connection(conn1, cur1, DB_PORT_1)
+    db.close_connection(conn2, cur2, DB_PORT_2)
+    db.close_connection(conn3, cur3, DB_PORT_3)

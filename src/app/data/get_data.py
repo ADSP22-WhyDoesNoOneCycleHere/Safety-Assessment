@@ -62,51 +62,38 @@ def osm_ids_per_infrastructure():
 
     return infrastructure_osm_ids
 
-# function to fetch data from database for a specific part of the infrastructure types
-def database_query(infra_types_part, cur, conn) :
-    #print("--------------------------------")
-    #print("data processed by " + conn.dsn + ":")
+def database_query(infra_types_part, port):
+    # connect
+    conn, cur = db.connect(port)
+    # create table for scores
+    scores.initialize_score_table(cur, conn)
+
+    # query data and compute stores
     for infra_type, osm_ids in infra_types_part.items():
-
-        #print(infra_type, osm_ids)
-
         for osm_id in osm_ids:
             execute_queries(cur, conn, osm_id, infra_type)
-    #print("--------------------------------")
+
+    # disconnect from database services
+    db.close_connection(conn, cur, port)
+
 
 if __name__ == '__main__':
     start = time.time()
-    # connect databases services
-    conn1, cur1 = db.connect(DB_PORT_1)
-    conn2, cur2 = db.connect(DB_PORT_2)
-    conn3, cur3 = db.connect(DB_PORT_3)
-
-    # setup new table for each database service
-    scores.initialize_score_table(cur1, conn1)
-    scores.initialize_score_table(cur2, conn2)
-    scores.initialize_score_table(cur3, conn3)
 
     print("Create infrastructure types.")
     infra_types = osm_ids_per_infrastructure().items()
     print("Created infrastructure types successfully.")
 
 
-
-    #print("--------------------------------")
-    #print("All infrastructure types:")
-    #print(infra_types.mapping.keys())
-    #print("--------------------------------")
     part_size = int(len(infra_types) / NUMBER_OF_DB_SERVICES)
 
-    # create threads
+    # array for processes
     processes = []
 
-    # append thread that queries the data for the first part of infrastructure types
-    processes.append(Process(target=database_query(dict(itertools.islice(infra_types, 0, part_size)), cur1, conn1)))
-    # append Thread that queries the data for the second part of infrastructure types
-    processes.append(Process(target=database_query(dict(itertools.islice(infra_types, part_size, 2 * part_size)), cur2, conn2)))
-    # append Thread that queries the data for the third part of infrastructure types
-    processes.append(Process(target=database_query(dict(itertools.islice(infra_types, 2 * part_size, len(infra_types))), cur3, conn3)))
+    # build processes, that connect to db, query and store the specific data and close connection
+    processes.append(Process(target=database_query, args=(dict(itertools.islice(infra_types, 0, part_size)), DB_PORT_1)))
+    processes.append(Process(target=database_query, args=(dict(itertools.islice(infra_types, part_size, 2 * part_size)), DB_PORT_2)))
+    processes.append(Process(target=database_query, args=(dict(itertools.islice(infra_types, 2 * part_size, len(infra_types))), DB_PORT_3)))
 
     print("Add infrastructure type to legs and store computed scores inside the database")
     for process in processes:
@@ -114,13 +101,6 @@ if __name__ == '__main__':
 
     for process in processes:
         process.join()
-
-
-
-    # disconnect from database services
-    db.close_connection(conn1, cur1, DB_PORT_1)
-    db.close_connection(conn2, cur2, DB_PORT_2)
-    db.close_connection(conn3, cur3, DB_PORT_3)
 
     end = time.time()
 

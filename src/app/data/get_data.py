@@ -44,14 +44,14 @@ def test():
     return Highway.query_area()
 
 
-def osm_ids_per_infrastructure():
+def osm_ids_per_infrastructure(port):
     infrastructure_osm_ids = {}
 
     # Uncomment the lines below to query the whole relevant area (program takes ages to complete)
-    # north, east, south, west = area.find_borders()
-    # requested_data = query_area(north, east, south, west)
+    north, east, south, west = area.find_borders(port)
+    requested_data = query_area(north, east, south, west)
 
-    requested_data = test()
+    #requested_data = test()
 
     for infrastructure_dict in requested_data["features"]:
         for infra_type, streets in infrastructure_dict.items():
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     start = time.time()
 
     print("Create infrastructure types.")
-    infra_types = osm_ids_per_infrastructure().items()
+    infra_types = osm_ids_per_infrastructure(DB_PORT_1).items()
     print("Created infrastructure types successfully.")
 
 

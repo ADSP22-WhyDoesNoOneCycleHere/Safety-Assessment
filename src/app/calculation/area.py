@@ -2,8 +2,8 @@ from ..data import db
 
 
 # Function for finding the outer bounds of the legs saved to the db
-def find_borders():
-    conn, cur = db.connect()
+def find_borders(port):
+    conn, cur = db.connect(port)
 
     cur.execute('SELECT ST_AsText(geom) FROM "SimRaAPI_osmwayslegs"')
 
@@ -30,7 +30,7 @@ def find_borders():
             if float(geom_list[1]) < west:
                 west = float(geom_list[1])
 
-    db.close_connection(conn, cur)
+    db.close_connection(conn, cur, port)
 
     print(f"North: {north}, East: {east}, South: {south}, West: {west}")
 

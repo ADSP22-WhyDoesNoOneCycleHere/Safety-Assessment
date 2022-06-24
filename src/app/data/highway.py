@@ -1,6 +1,6 @@
 import overpass
 
-api = overpass.API(endpoint="http://vm3.mcc.tu-berlin.de:8088/api/interpreter", timeout=90)
+api = overpass.API(endpoint="https://vm3.mcc.tu-berlin.de:8088/api/interpreter", timeout=90)
 
 highway = [
             "[highway = trunk]",

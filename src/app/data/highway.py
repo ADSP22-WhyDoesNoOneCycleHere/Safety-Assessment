@@ -1,3 +1,5 @@
+from ast import arg
+from multiprocessing import Pool, cpu_count
 import overpass
 
 api = overpass.API(endpoint="http://vm3.mcc.tu-berlin.de:8088/api/interpreter", timeout=90)
@@ -45,15 +47,39 @@ highway = [
 class Highway:
 
     def query_area(sw = "52.51326008267224, 13.322514165234397", ne = "52.51681153023918, 13.335043884715132"):
-        elements = { "features": [ ] }
-        for infra_types in highway:
-            if isinstance(infra_types, list):
-                query = ""
-                for infra_type in infra_types:
-                    query += "way" + infra_type + "(" + sw + "," + ne + ");"
-                res = api.get(query, responseformat="json")
-                elements["features"].append({infra_types[0]: res["elements"]})
-            else:
-                res = api.get("way" + infra_types + "(" + sw + "," + ne + ")", responseformat="json")
-                elements["features"].append( { infra_types: res["elements"] } )
-        return elements
+        pool = Pool(cpu_count())
+        features = pool.map(Highway.queries, [ (hw, sw, ne) for hw in highway ])
+        
+        pool.close()
+        pool.join()
+
+        return  { "features": features }
+        #for infra_types in highway:
+        #    if isinstance(infra_types, list):
+        #        query = ""
+        #        for infra_type in infra_types:
+        #            query += "way" + infra_type + "(" + sw + "," + ne + ");"
+        #        res = api.get(query, responseformat="json")
+        #        elements["features"].append({infra_types[0]: res["elements"]})
+        #    else:
+        #        res = api.get("way" + infra_types + "(" + sw + "," + ne + ")", responseformat="json")
+        #        elements["features"].append( { infra_types: res["elements"] } )
+        #return elements
+
+    def queries(args):
+        infra_types = args[0]
+        sw = args[1]
+        ne = args[2]
+        if isinstance(infra_types, list):
+            query = ""
+            for infra_type in infra_types:
+                query += "way" + infra_type + "(" + sw + "," + ne + ");"
+            res = api.get(query, responseformat="json")
+            return { infra_types[0]: res["elements"] }
+        else:
+            res = api.get("way" + infra_types + "(" + sw + "," + ne + ")", responseformat="json")
+            return { infra_types: res["elements"] }
+
+
+if __name__ == '__main__':
+    print(Highway.query_area())

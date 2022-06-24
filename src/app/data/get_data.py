@@ -26,7 +26,7 @@ def execute_queries(cur, osm_id, infra_type):
         leg["count"] = count[5]
         leg["length"] = count[6]
 
-        scores.calculate_scores_ways(leg, cur, conn)
+        scores.calculate_scores_legs(leg, cur, conn)
 
 
 def query_area(north, east, south, west):
@@ -59,15 +59,20 @@ def osm_ids_per_infrastructure():
 
 if __name__ == '__main__':
     conn, cur = db.connect()
-    scores.initialize_score_table(cur, conn)
+    scores.add_columns(cur, conn)
+    scores.initialize_infra_table(cur, conn)
 
     infrastructure_osm_ids = osm_ids_per_infrastructure()
 
     start = time.time()
 
     for infra_type, osm_ids in infrastructure_osm_ids.items():
+        print(f"++ Working on {infra_type} with {len(osm_ids)} osm_ids")
+        print(f"-> Calculating leg scores for infra type: {infra_type}")
         for osm_id in osm_ids:
             execute_queries(cur, osm_id, infra_type)
+        print(f"-> Calculating averaged scores for infra type: {infra_type}")
+        scores.calculate_scores_infra_types(infra_type, cur, conn)
 
     end = time.time()
 

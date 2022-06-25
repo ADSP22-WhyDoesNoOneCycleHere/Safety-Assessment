@@ -53,7 +53,7 @@ class Highway:
                 query = "("         # query for multiple tags need to be in paranthesis 
                 for infra_type in infra_types:
                     query += f"way{infra_type}({sw}, {ne});"
-                query += ")"
+                query += ");"
                 res = api.get(query, responseformat="json")
                 elements["features"].append({infra_types[0]: res["elements"]})
             else:

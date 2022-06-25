@@ -50,12 +50,13 @@ class Highway:
         elements = { "features": [ ] }
         for infra_types in highway:
             if isinstance(infra_types, list):
-                query = ""
+                query = "("         # query for multiple tags need to be in paranthesis 
                 for infra_type in infra_types:
-                    query += "way" + infra_type + "(" + sw + "," + ne + ");"
+                    query += f"way{infra_type}({sw}, {ne});"
+                query += ")"
                 res = api.get(query, responseformat="json")
                 elements["features"].append({infra_types[0]: res["elements"]})
             else:
-                res = api.get("way" + infra_types + "(" + sw + "," + ne + ")", responseformat="json")
+                res = api.get(f"way{infra_types}({sw}, {ne})", responseformat="json")
                 elements["features"].append( { infra_types: res["elements"] } )
         return elements

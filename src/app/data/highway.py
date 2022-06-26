@@ -1,4 +1,3 @@
-from ast import arg
 from multiprocessing import Pool, cpu_count
 import overpass
 

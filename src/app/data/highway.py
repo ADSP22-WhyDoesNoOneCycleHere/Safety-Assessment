@@ -1,6 +1,5 @@
 from multiprocessing import Pool, cpu_count
 import overpass
-import time
 
 api = overpass.API(endpoint="https://vm3.mcc.tu-berlin.de:8088/api/interpreter", timeout=90)
 
@@ -71,6 +70,8 @@ class Highway:
 
 
 if __name__ == '__main__':
+    import time
+
     start = time.time()
     Highway.query_area()
     end = time.time()

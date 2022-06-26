@@ -2,7 +2,7 @@ from ast import arg
 from multiprocessing import Pool, cpu_count
 import overpass
 
-api = overpass.API(endpoint="http://vm3.mcc.tu-berlin.de:8088/api/interpreter", timeout=90)
+api = overpass.API(endpoint="https://vm3.mcc.tu-berlin.de:8088/api/interpreter", timeout=90)
 
 highway = [
             "[highway = trunk]",
@@ -10,7 +10,7 @@ highway = [
             "[highway = secondary]",
             "[highway = tertiary]",
             "[highway = unclassified]",
-            [ "[highway = residential]", "[highway = residential][~'^parking:.*$'~'.'][!cycleway]" ],
+            "[highway = residential]", "[highway = residential][~'^parking:.*$'~'.'][!cycleway]",
             "[highway = motorway_link]",
             "[highway = trunk_link]",
             "[highway = primary_link]",
@@ -24,13 +24,13 @@ highway = [
             "[highway = escape]",
             "[highway = road]",
             "[highway = busway]",
-            [ "[highway = footway][bicycle = yes]", "[highway = footway][bicycle = no]", "[highway = footway]" ],
+            "[highway = footway][bicycle = yes]", "[highway = footway][bicycle = no]", "[highway = footway]",
             "[highway = bridleway]",
             "[highway = steps]",
             "[highway = corridor]",
             "[highway = path]",
-            [ "[footway = sidewalk][bicycle = yes]", "[footway = sidewalk][bicycle = no]", "[footway = sidewalk]" ],
-            [ "[footway = crossing][bicycle = yes]", "[footway = crossing][bicycle = no]", "[footway = crossing]" ],
+            "[footway = sidewalk][bicycle = yes]", "[footway = sidewalk][bicycle = no]", "[footway = sidewalk]",
+            "[footway = crossing][bicycle = yes]", "[footway = crossing][bicycle = no]", "[footway = crossing]",
             "[highway = cycleway]",
             [ "[cycleway = lane]", "['cycleway:left' = lane]", "['cycleway:right' = lane]", "['cycleway:both' = lane]" ],
             [ "[cycleway = oppposite]", "['cycleway:left' = oppposite]", "['cycleway:right' = oppposite]", "['cycleway:both' = oppposite]" ],
@@ -54,17 +54,6 @@ class Highway:
         pool.join()
 
         return  { "features": features }
-        #for infra_types in highway:
-        #    if isinstance(infra_types, list):
-        #        query = ""
-        #        for infra_type in infra_types:
-        #            query += "way" + infra_type + "(" + sw + "," + ne + ");"
-        #        res = api.get(query, responseformat="json")
-        #        elements["features"].append({infra_types[0]: res["elements"]})
-        #    else:
-        #        res = api.get("way" + infra_types + "(" + sw + "," + ne + ")", responseformat="json")
-        #        elements["features"].append( { infra_types: res["elements"] } )
-        #return elements
 
     def queries(args):
         infra_types = args[0]

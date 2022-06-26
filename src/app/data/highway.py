@@ -95,4 +95,4 @@ if __name__ == '__main__':
     old_time = end - start
     print(old_time)
 
-    print(old_time / new_time)
+    print( (old_time - new_time) / old_time )

@@ -44,9 +44,11 @@ highway = [
             "[highway = construction]"
         ]
 
+
 class Highway:
 
     def query_area(sw = "52.51326008267224, 13.322514165234397", ne = "52.51681153023918, 13.335043884715132"):
+
         pool = Pool(cpu_count())
         features = pool.map(Highway.queries, [ (hw, sw, ne) for hw in highway ])
         

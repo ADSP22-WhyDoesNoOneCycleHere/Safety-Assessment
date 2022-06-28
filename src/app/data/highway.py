@@ -3,6 +3,7 @@ import overpass
 
 api = overpass.API(endpoint="https://overpass.kumi.systems/api/interpreter", timeout=90)
 
+
 highway = [
             "[highway = trunk]",
             "[highway = primary]",

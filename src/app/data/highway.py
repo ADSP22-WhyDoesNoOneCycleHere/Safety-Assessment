@@ -1,6 +1,8 @@
+from multiprocessing import Pool, cpu_count
 import overpass
 
-api = overpass.API(endpoint="https://vm3.mcc.tu-berlin.de:8088/api/interpreter", timeout=90)
+api = overpass.API(endpoint="https://overpass.kumi.systems/api/interpreter", timeout=90)
+
 
 highway = [
             "[highway = trunk]",
@@ -8,8 +10,7 @@ highway = [
             "[highway = secondary]",
             "[highway = tertiary]",
             "[highway = unclassified]",
-            "[highway = residential]",
-            "[highway = residential][~'^parking:.*$'~'.'][!cycleway]",
+            "[highway = residential]", "[highway = residential][~'^parking:.*$'~'.'][!cycleway]",
             "[highway = motorway_link]",
             "[highway = trunk_link]",
             "[highway = primary_link]",
@@ -32,7 +33,7 @@ highway = [
             "[footway = crossing][bicycle = yes]", "[footway = crossing][bicycle = no]", "[footway = crossing]",
             "[highway = cycleway]",
             [ "[cycleway = lane]", "['cycleway:left' = lane]", "['cycleway:right' = lane]", "['cycleway:both' = lane]" ],
-            [ "[cycleway = oppposite]", "['cycleway:left' = oppposite]", "['cycleway:right' = oppposite]", "['cycleway:both' = oppposite]" ],
+            [ "[cycleway = opposite]", "['cycleway:left' = opposite]", "['cycleway:right' = opposite]", "['cycleway:both' = opposite]" ],
             [ "[cycleway = opposite_lane]", "['cycleway:left' = opposite_lane]", "['cycleway:right' = opposite_lane]", "['cycleway:both' = opposite_lane]" ],
             [ "[cycleway = separate]", "['cycleway:left' = separate]", "['cycleway:right' = separate]", "['cycleway:both' = separate]", "[cycleway = track]", "['cycleway:left' = track]", "['cycleway:right' = track]", "['cycleway:both' = track]" ],
             [ "[cycleway = opposite_track]", "['cycleway:left' = opposite_track]", "['cycleway:right' = opposite_track]", "['cycleway:both' = opposite_track]" ],
@@ -46,15 +47,56 @@ highway = [
 class Highway:
 
     def query_area(sw = "52.51326008267224, 13.322514165234397", ne = "52.51681153023918, 13.335043884715132"):
-        elements = { "features": [ ] }
-        for infra_types in highway:
-            if isinstance(infra_types, list):
-                query = ""
-                for infra_type in infra_types:
-                    query += "way" + infra_type + "(" + sw + "," + ne + ");"
-                res = api.get(query, responseformat="json")
-                elements["features"].append({infra_types[0]: res["elements"]})
-            else:
-                res = api.get("way" + infra_types + "(" + sw + "," + ne + ")", responseformat="json")
-                elements["features"].append( { infra_types: res["elements"] } )
-        return elements
+        pool = Pool(cpu_count())
+        features = pool.map(Highway.queries, [ (hw, sw, ne) for hw in highway ])
+        
+        pool.close()
+        pool.join()
+
+        return  { "features": features }
+
+    def queries(args):
+        infra_types = args[0]
+        sw = args[1]
+        ne = args[2]
+        if isinstance(infra_types, list):
+            query = "("
+            for infra_type in infra_types:
+                query += "way" + infra_type + "(" + sw + "," + ne + ");"
+            query += ");"
+            res = api.get(query, responseformat="json")
+            return { infra_types[0]: res["elements"] }
+        else:
+            res = api.get("way" + infra_types + "(" + sw + "," + ne + ")", responseformat="json")
+            return { infra_types: res["elements"] }
+
+
+if __name__ == '__main__':
+    import time
+
+    start = time.time()
+    print(len(Highway.query_area()["features"]))
+    end = time.time()
+    new_time = end - start
+    print(new_time)
+
+    start = time.time()
+    sw = "52.51326008267224, 13.322514165234397"
+    ne = "52.51681153023918, 13.335043884715132"
+    elements = { "features": [ ] }
+    for infra_types in highway:
+        if isinstance(infra_types, list):
+            query = ""
+            for infra_type in infra_types:
+                query += "way" + infra_type + "(" + sw + "," + ne + ");"
+            res = api.get(query, responseformat="json")
+            elements["features"].append({infra_types[0]: res["elements"]})
+        else:
+            res = api.get("way" + infra_types + "(" + sw + "," + ne + ")", responseformat="json")
+            elements["features"].append( { infra_types: res["elements"] } )
+    print(len(elements["features"]))
+    end = time.time()
+    old_time = end - start
+    print(old_time)
+
+    print( (old_time - new_time) / old_time )

@@ -1,18 +1,9 @@
-from fastapi import FastAPI
-import requests as req
+import json
 
-app = FastAPI()
-
-@app.on_event("startup")
-async def startup_event():
-    print("startup")
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    print("shutdown")
-
-@app.get("/")
-async def test():
-
-    return { "message:" "success" }
+if __name__ == "__main__":
+    with open("areas.json") as f:
+        areas = json.loads(f)
+        for area in areas["areas"]:
+            print("sw", area[0])
+            print("ne", area[1])
     

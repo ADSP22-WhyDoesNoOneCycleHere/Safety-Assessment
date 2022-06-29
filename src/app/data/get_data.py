@@ -12,7 +12,7 @@ leg = {}  # Dict to which the different counts are saved
 def execute_queries(cur, osm_id, infra_type):
     query = f'Select "id", "avoidedCount", "chosenCount", "normalIncidentCount", ' \
             f'"scaryIncidentCount", "count", ST_Length(geom::geography) as length' \
-            f' from "SimRaAPI_osmwayslegs" where "osmId"={osm_id} and count > 0;'
+            f' from "SimRaAPI_osmwayslegs" where "osmId"={osm_id};'
 
     cur.execute(query)
 

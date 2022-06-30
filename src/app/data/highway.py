@@ -45,9 +45,9 @@ highway = [
 
 class Highway:
 
-    def query_area(name = "Berlin", sw = "52.28732211531842, 12.91903273460537", ne = "52.69863091076533, 13.86972353817903"):
+    def query_area(country = "Deutschland", city = "Berlin"):
         pool = Pool(cpu_count())
-        features = pool.map(Highway.queries, [ (hw, name, sw, ne) for hw in highway ])
+        features = pool.map(Highway.queries, [ (hw, country, city) for hw in highway ])
         
         pool.close()
         pool.join()
@@ -56,17 +56,16 @@ class Highway:
 
     def queries(args):
         infra_types = args[0]
-        name = args[1]
-        sw = args[2]
-        ne = args[3]
+        country = args[1]
+        city = args[2]
         if isinstance(infra_types, list):
             elements = [ ]
             for infra_type in infra_types:
-                query = "area[name = " + name + "]; way" + infra_type + "(area)(" + sw + "," + ne + ");"
+                query = "area[name = " + country + "]->.country; area[name = " + city + "]->.city; way" + infra_type + "(area.city)(area.country);"
                 elements.append(api.get(query, responseformat="json")["elements"])
             return { infra_types[0]: elements }
         else:
-            res = api.get("area[name = " + name + "]; way" + infra_types + "(area)(" + sw + "," + ne + ");", responseformat="json")
+            res = api.get("area[name = " + country + "]->.country; area[name = " + city + "]->.city; way" + infra_types + "(area.city)(area.country);", responseformat="json")
             return { infra_types: res["elements"] }
 
 

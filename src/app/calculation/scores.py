@@ -12,6 +12,7 @@ def calculate_scores_legs(leg, cur, conn):
 
         # Scary incidents times 4.4 as this is the weight that was calculated for Berlin (see bachelors thesis)
         leg['s_score'] = max(min(1 - (1 / leg['count'] * leg['length']) * (4.4 * leg['scary_incident_count'] + leg['normal_incident_count']), 1), 0)
+        leg['danger_score'] = (1 / leg['count'] * leg['length']) * (4.4 * leg['scary_incident_count'] + leg['normal_incident_count'])
         leg['m_p_score'] = ((1 - leg['a_score']) + leg['c_score'] + leg['s_score'] * 2) / 4
 
         query = f'update "SimRaAPI_osmwayslegs" ' \
@@ -21,7 +22,8 @@ def calculate_scores_legs(leg, cur, conn):
                 f"c_score = {leg['c_score']}, " \
                 f"p_score = {leg['p_score']}, " \
                 f"s_score = {leg['s_score']}, " \
-                f"m_p_score = {leg['m_p_score']} " \
+                f"m_p_score = {leg['m_p_score']}, " \
+                f"danger_score = {leg['danger_score']} " \
                 f"where id = {leg['id']};"
 
         cur.execute(query)
@@ -79,6 +81,7 @@ def add_columns(cur, conn):
             'drop column if exists p_score, ' \
             'drop column if exists s_score, ' \
             'drop column if exists m_p_score, ' \
+            'drop column if exists danger_score, ' \
             'drop column if exists infra_type;'
 
     cur.execute(query)
@@ -90,6 +93,7 @@ def add_columns(cur, conn):
             "add column if not exists p_score numeric," \
             "add column if not exists s_score numeric," \
             "add column if not exists m_p_score numeric," \
+            "add column if not exists danger_score numeric," \
             "add column if not exists infra_type text[];"
 
     cur.execute(query)

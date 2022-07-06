@@ -5,7 +5,6 @@ api = overpass.API(endpoint="https://overpass.kumi.systems/api/interpreter", tim
 
 
 highway = [
-            "[highway = trunk]",
             "[highway = primary]",
             "[highway = secondary]",
             "[highway = tertiary]",
@@ -22,15 +21,14 @@ highway = [
             "[highway = track]",
             "[highway = bus_guideway]",
             "[highway = escape]",
-            "[highway = road]",
             "[highway = busway]",
             "[highway = footway][bicycle = yes]", "[highway = footway][bicycle = no]", "[highway = footway]",
             "[highway = bridleway]",
             "[highway = steps]",
             "[highway = corridor]",
             "[highway = path]",
-            "[footway = sidewalk][bicycle = yes]", "[footway = sidewalk][bicycle = no]", "[footway = sidewalk]",
-            "[footway = crossing][bicycle = yes]", "[footway = crossing][bicycle = no]", "[footway = crossing]",
+            "[footway = sidewalk][bicycle = yes]", "[footway = sidewalk]",
+            "[footway = crossing][bicycle = yes]", "[footway = crossing]",
             ["[cycleway = lane]", "['cycleway:left' = lane]", "['cycleway:right' = lane]", "['cycleway:both' = lane]"],
             ["[cycleway = opposite]", "['cycleway:left' = opposite]", "['cycleway:right' = opposite]", "['cycleway:both' = opposite]"],
             ["[cycleway = opposite_lane]", "['cycleway:left' = opposite_lane]", "['cycleway:right' = opposite_lane]", "['cycleway:both' = opposite_lane]"],

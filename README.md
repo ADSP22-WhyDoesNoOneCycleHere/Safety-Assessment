@@ -7,6 +7,9 @@ Anleitung setup:
 2. Start uvicorn server for osm-infrastructure repository
 3. Run the python file
 
+A description of the infrastructure-types used can be found [here](/doc/infra-types.md)
+
+
 ## Startup
 
  `docker-compose up`

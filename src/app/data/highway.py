@@ -1,7 +1,9 @@
 from multiprocessing import Pool, cpu_count
+from pprint import pprint
+
 import overpass
 
-api = overpass.API(endpoint="https://overpass.kumi.systems/api/interpreter", timeout=90)
+api = overpass.API(endpoint="https://vm3.mcc.tu-berlin.de:7583/api/interpreter", timeout=90)
 
 
 highway = [
@@ -60,6 +62,7 @@ class Highway:
                 query += "way" + infra_type + "(" + sw + "," + ne + ");"
             query += ");"
             res = api.get(query, responseformat="json")
+            pprint(res)
             return { infra_types[0]: res["elements"] }
         else:
             res = api.get("way" + infra_types + "(" + sw + "," + ne + ")", responseformat="json")
@@ -89,7 +92,6 @@ if __name__ == '__main__':
         else:
             res = api.get("way" + infra_types + "(" + sw + "," + ne + ")", responseformat="json")
             elements["features"].append( { infra_types: res["elements"] } )
-    print(len(elements["features"]))
     end = time.time()
     old_time = end - start
     print(old_time)

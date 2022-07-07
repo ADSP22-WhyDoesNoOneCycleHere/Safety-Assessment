@@ -56,6 +56,7 @@ def calculate_scores_infra_types(infra_type, cur, conn):
             f'round(avg(c_score), 4), ' \
             f'round(avg(p_score), 4), ' \
             f'round(avg(s_score), 4), ' \
+            f'round(avg(danger_score), 4), ' \
             f'round(avg(m_p_score), 4), ' \
             f'sum(count), ' \
             f'sum("normalIncidentCount"), ' \
@@ -111,7 +112,8 @@ def initialize_infra_table(cur, conn):
             f'avg_c_score numeric, ' \
             f'avg_p_score numeric, ' \
             f'avg_s_score numeric, ' \
-            f'avg_m_p_score numeric,' \
+            f'avg_m_p_score numeric, ' \
+            f'avg_danger_score numeric, ' \
             f'count numeric, ' \
             f'incident_count numeric, ' \
             f'avg_incident_count numeric, ' \

@@ -46,7 +46,7 @@ def calculate_scores_infra_types(infra_type, cur, conn):
 
     query = f'insert into infra_type_scores' \
             f'(infra_type, avg_a_score, avg_c_score, avg_p_score, ' \
-            f'avg_s_score, avg_m_p_score, count, incident_count, ' \
+            f'avg_s_score, avg_m_p_score, avg_danger_score, count, incident_count, ' \
             f'avg_incident_count, scary_incident_count, ' \
             f'avg_scary_incident_count, c_count, avg_c_count, ' \
             f'a_count, avg_a_count) ' \

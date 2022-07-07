@@ -3,7 +3,7 @@ from pprint import pprint
 
 import overpass
 
-api = overpass.API(endpoint="https://vm3.mcc.tu-berlin.de:7583/api/interpreter", timeout=90)
+api = overpass.API(endpoint="https://overpass.kumi.systems/api/interpreter", timeout=90)
 
 
 highway = [
@@ -42,10 +42,9 @@ highway = [
 
 class Highway:
 
-    def query_area(sw = "52.51326008267224, 13.322514165234397", ne = "52.51681153023918, 13.335043884715132"):
-
+    def query_area(country = "Deutschland", city = "Berlin"):
         pool = Pool(cpu_count())
-        features = pool.map(Highway.queries, [ (hw, sw, ne) for hw in highway ])
+        features = pool.map(Highway.queries, [ (hw, country, city) for hw in highway ])
         
         pool.close()
         pool.join()
@@ -54,46 +53,18 @@ class Highway:
 
     def queries(args):
         infra_types = args[0]
-        sw = args[1]
-        ne = args[2]
+        country = args[1]
+        city = args[2]
         if isinstance(infra_types, list):
-            query = "("
+            elements = [ ]
             for infra_type in infra_types:
-                query += "way" + infra_type + "(" + sw + "," + ne + ");"
-            query += ");"
-            res = api.get(query, responseformat="json")
-            pprint(res)
-            return { infra_types[0]: res["elements"] }
+                query = "area[name = " + country + "]->.country; area[name = " + city + "]->.city; way" + infra_type + "(area.city)(area.country);"
+                elements += api.get(query, responseformat="json")["elements"]
+            return { infra_types[0]: elements }
         else:
-            res = api.get("way" + infra_types + "(" + sw + "," + ne + ")", responseformat="json")
+            res = api.get("area[name = " + country + "]->.country; area[name = " + city + "]->.city; way" + infra_types + "(area.city)(area.country);", responseformat="json")
             return { infra_types: res["elements"] }
 
 
 if __name__ == '__main__':
-    import time
-
-    start = time.time()
-    print(len(Highway.query_area()["features"]))
-    end = time.time()
-    new_time = end - start
-    print(new_time)
-
-    start = time.time()
-    sw = "52.51326008267224, 13.322514165234397"
-    ne = "52.51681153023918, 13.335043884715132"
-    elements = { "features": [ ] }
-    for infra_types in highway:
-        if isinstance(infra_types, list):
-            query = ""
-            for infra_type in infra_types:
-                query += "way" + infra_type + "(" + sw + "," + ne + ");"
-            res = api.get(query, responseformat="json")
-            elements["features"].append({infra_types[0]: res["elements"]})
-        else:
-            res = api.get("way" + infra_types + "(" + sw + "," + ne + ")", responseformat="json")
-            elements["features"].append( { infra_types: res["elements"] } )
-    end = time.time()
-    old_time = end - start
-    print(old_time)
-
-    print( (old_time - new_time) / old_time )
+    print(Highway.query_area())

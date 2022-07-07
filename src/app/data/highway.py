@@ -1,17 +1,18 @@
 from multiprocessing import Pool, cpu_count
+from pprint import pprint
+
 import overpass
 
-api = overpass.API(endpoint="https://lz4.overpass-api.de/api/interpreter", timeout=90)
+api = overpass.API(endpoint="https://vm3.mcc.tu-berlin.de:7583/api/interpreter", timeout=90)
+
 
 highway = [
-            "[highway = trunk]",
             "[highway = primary]",
             "[highway = secondary]",
             "[highway = tertiary]",
             "[highway = unclassified]",
             "[highway = residential]", "[highway = residential][~'^parking:.*$'~'.'][!cycleway]",
             "[highway = motorway_link]",
-            "[highway = trunk_link]",
             "[highway = primary_link]",
             "[highway = secondary_link]",
             "[highway = tertiary_link]",
@@ -19,29 +20,25 @@ highway = [
             "[highway = service]",
             "[highway = pedestrian]",
             "[highway = track]",
-            "[highway = bus_guideway]",
-            "[highway = escape]",
-            "[highway = road]",
             "[highway = busway]",
             "[highway = footway][bicycle = yes]", "[highway = footway][bicycle = no]", "[highway = footway]",
             "[highway = bridleway]",
             "[highway = steps]",
-            "[highway = corridor]",
             "[highway = path]",
-            "[footway = sidewalk][bicycle = yes]", "[footway = sidewalk][bicycle = no]", "[footway = sidewalk]",
-            "[footway = crossing][bicycle = yes]", "[footway = crossing][bicycle = no]", "[footway = crossing]",
-            "[highway = cycleway]",
-            [ "[cycleway = lane]", "['cycleway:left' = lane]", "['cycleway:right' = lane]", "['cycleway:both' = lane]" ],
-            [ "[cycleway = opposite]", "['cycleway:left' = opposite]", "['cycleway:right' = opposite]", "['cycleway:both' = opposite]" ],
-            [ "[cycleway = opposite_lane]", "['cycleway:left' = opposite_lane]", "['cycleway:right' = opposite_lane]", "['cycleway:both' = opposite_lane]" ],
-            [ "[cycleway = separate]", "['cycleway:left' = separate]", "['cycleway:right' = separate]", "['cycleway:both' = separate]", "[cycleway = track]", "['cycleway:left' = track]", "['cycleway:right' = track]", "['cycleway:both' = track]" ],
-            [ "[cycleway = opposite_track]", "['cycleway:left' = opposite_track]", "['cycleway:right' = opposite_track]", "['cycleway:both' = opposite_track]" ],
-            [ "[cycleway = share_busway]", "['cycleway:left' = share_busway]", "['cycleway:right' = share_busway]", "['cycleway:both' = share_busway]" ],
-            [ "[cycleway = opposite_share_busway]", "['cycleway:left' = opposite_share_busway]", "['cycleway:right' = opposite_share_busway]", "['cycleway:both' = opposite_share_busway]" ],
-            [ "[cycleway = shared_lane]", "['cycleway:left' = shared_lane]", "['cycleway:right' = shared_lane]", "['cycleway:both' = shared_lane]" ],
+            "[footway = sidewalk][bicycle = yes]", "[footway = sidewalk]",
+            "[footway = crossing][bicycle = yes]", "[footway = crossing]",
+            ["[cycleway = lane]", "['cycleway:left' = lane]", "['cycleway:right' = lane]", "['cycleway:both' = lane]"],
+            ["[cycleway = opposite]", "['cycleway:left' = opposite]", "['cycleway:right' = opposite]", "['cycleway:both' = opposite]"],
+            ["[cycleway = opposite_lane]", "['cycleway:left' = opposite_lane]", "['cycleway:right' = opposite_lane]", "['cycleway:both' = opposite_lane]"],
+            ["[cycleway = separate]", "['cycleway:left' = separate]", "['cycleway:right' = separate]", "['cycleway:both' = separate]", "[cycleway = track]", "['cycleway:left' = track]", "['cycleway:right' = track]", "['cycleway:both' = track]"],
+            ["[cycleway = opposite_track]", "['cycleway:left' = opposite_track]", "['cycleway:right' = opposite_track]", "['cycleway:both' = opposite_track]"],
+            ["[cycleway = share_busway]", "['cycleway:left' = share_busway]", "['cycleway:right' = share_busway]", "['cycleway:both' = share_busway]"],
+            ["[cycleway = shared_lane]", "['cycleway:left' = shared_lane]", "['cycleway:right' = shared_lane]", "['cycleway:both' = shared_lane]"],
+            "[bicycle = designated]", "[bicycle_road = yes]", "[highway = cycleway]",  # Might have to be put together if overlap is too big
             "[busway = lane]",
             "[highway = construction]"
         ]
+
 
 class Highway:
 

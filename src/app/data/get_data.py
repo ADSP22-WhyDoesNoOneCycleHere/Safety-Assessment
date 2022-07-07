@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import time
 import json
+from pprint import pprint
 
 from src.app.data import db
 from src.app.calculation import area
@@ -30,8 +31,8 @@ def execute_queries(cur, conn, osm_id, infra_type):
         scores.calculate_scores_legs(leg, cur, conn)
 
 
-def query_area(north, east, south, west):
-    return Highway.query_area(str(south) + "," + str(west), str(north) + "," + str(east))
+def query_area(country, city):
+    return Highway.query_area(country, city)
 
 
 # Use this function when testing new features; query_area() queries ALL of Berlin
@@ -62,7 +63,7 @@ def main():
     scores.add_columns(cur, conn)
     scores.initialize_infra_table(cur, conn)
 
-    with open("./src/app/areas.json") as f: # for docker: ./app/areas.json
+    with open("areas.json") as f: # for docker: ./app/areas.json
         areas = json.load(f)
         for area in areas["areas"]:
 

@@ -3,7 +3,7 @@ from pprint import pprint
 
 import overpass
 
-api = overpass.API(endpoint="https://vm3.mcc.tu-berlin.de:7583/api/interpreter", timeout=90)
+api = overpass.API(endpoint="https://overpass.kumi.systems/api/interpreter", timeout=90)
 
 
 highway = [
@@ -59,7 +59,8 @@ class Highway:
             elements = [ ]
             for infra_type in infra_types:
                 query = "area[name = " + country + "]->.country; area[name = " + city + "]->.city; way" + infra_type + "(area.city)(area.country);"
-                elements.append(api.get(query, responseformat="json")["elements"])
+                elements += api.get(query, responseformat="json")["elements"]
+            print(elements)
             return { infra_types[0]: elements }
         else:
             res = api.get("area[name = " + country + "]->.country; area[name = " + city + "]->.city; way" + infra_types + "(area.city)(area.country);", responseformat="json")

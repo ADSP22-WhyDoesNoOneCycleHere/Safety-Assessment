@@ -1,29 +1,40 @@
 def calculate_scores_legs(leg, cur, conn):
-    leg['a_score'] = min(leg['a_count'] / leg['count'], 1)
-    leg['c_score'] = min(leg['c_count'] / leg['count'], 1)
-    leg['p_score'] = ((1 - leg['a_score']) + leg['c_score']) / 2
-
-    # Scary incidents times 4.4 as this is the weight that was calculated for Berlin (see bachelors thesis)
-    leg['s_score'] = max(min(1 - (1 / leg['count'] * leg['length']) * (4.4 * leg['scary_incident_count'] + leg['normal_incident_count']), 1), 0)
-    leg['m_p_score'] = ((1 - leg['a_score']) + leg['c_score'] + leg['s_score'] * 2) / 4
 
     # annoying cleaning of input strings as sql cant handle some operators (:, $, etc)
     if "parking" in leg['infra_type']:
         leg["infra_type"] = "[highway = residential][parking][!cycleway]"
     leg['infra_type'] = leg['infra_type'].replace(":", "")
 
-    query = f'update "SimRaAPI_osmwayslegs" ' \
-            f"set " \
-            f"infra_type = array_append(infra_type, '{leg['infra_type']}'), " \
-            f"a_score = {leg['a_score']}, " \
-            f"c_score = {leg['c_score']}, " \
-            f"p_score = {leg['p_score']}, " \
-            f"s_score = {leg['s_score']}, " \
-            f"m_p_score = {leg['m_p_score']} " \
-            f"where id = {leg['id']};"
+    if leg['count'] > 0:
+        leg['a_score'] = min(leg['a_count'] / leg['count'], 1)
+        leg['c_score'] = min(leg['c_count'] / leg['count'], 1)
+        leg['p_score'] = ((1 - leg['a_score']) + leg['c_score']) / 2
 
-    cur.execute(query)
-    conn.commit()
+        # Scary incidents times 4.4 as this is the weight that was calculated for Berlin (see bachelors thesis)
+        leg['s_score'] = max(min(1 - (1 / leg['count'] * leg['length']) * (4.4 * leg['scary_incident_count'] + leg['normal_incident_count']), 1), 0)
+        leg['m_p_score'] = ((1 - leg['a_score']) + leg['c_score'] + leg['s_score'] * 2) / 4
+
+        query = f'update "SimRaAPI_osmwayslegs" ' \
+                f"set " \
+                f"infra_type = array_append(infra_type, '{leg['infra_type']}'), " \
+                f"a_score = {leg['a_score']}, " \
+                f"c_score = {leg['c_score']}, " \
+                f"p_score = {leg['p_score']}, " \
+                f"s_score = {leg['s_score']}, " \
+                f"m_p_score = {leg['m_p_score']} " \
+                f"where id = {leg['id']};"
+
+        cur.execute(query)
+        conn.commit()
+
+    else:
+        query = f'update "SimRaAPI_osmwayslegs" ' \
+                f'set ' \
+                f"infra_type = array_append(infra_type, '{leg['infra_type']}') " \
+                f"where id = {leg['id']};"
+
+        cur.execute(query)
+        conn.commit()
 
 
 def calculate_scores_infra_types(infra_type, cur, conn):
@@ -54,7 +65,8 @@ def calculate_scores_infra_types(infra_type, cur, conn):
             f'sum("avoidedCount"), ' \
             f'round(avg("avoidedCount"), 4) ' \
             f'from "SimRaAPI_osmwayslegs" ' \
-            f"where '{infra_type}' = any(infra_type);"
+            f"where '{infra_type}' = any(infra_type)" \
+            f"and count > 0;"
 
     cur.execute(query)
     conn.commit()
@@ -62,12 +74,12 @@ def calculate_scores_infra_types(infra_type, cur, conn):
 
 def add_columns(cur, conn):
     query = 'alter table "SimRaAPI_osmwayslegs" ' \
-            'drop column a_score, ' \
-            'drop column c_score, ' \
-            'drop column p_score, ' \
-            'drop column s_score, ' \
-            'drop column m_p_score, ' \
-            'drop column infra_type;'
+            'drop column if exists a_score, ' \
+            'drop column if exists c_score, ' \
+            'drop column if exists p_score, ' \
+            'drop column if exists s_score, ' \
+            'drop column if exists m_p_score, ' \
+            'drop column if exists infra_type;'
 
     cur.execute(query)
     conn.commit()

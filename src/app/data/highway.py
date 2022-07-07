@@ -1,18 +1,18 @@
 from multiprocessing import Pool, cpu_count
+from pprint import pprint
+
 import overpass
 
-api = overpass.API(endpoint="https://overpass.kumi.systems/api/interpreter", timeout=90)
+api = overpass.API(endpoint="https://vm3.mcc.tu-berlin.de:7583/api/interpreter", timeout=90)
 
 
 highway = [
-            "[highway = trunk]",
             "[highway = primary]",
             "[highway = secondary]",
             "[highway = tertiary]",
             "[highway = unclassified]",
             "[highway = residential]", "[highway = residential][~'^parking:.*$'~'.'][!cycleway]",
             "[highway = motorway_link]",
-            "[highway = trunk_link]",
             "[highway = primary_link]",
             "[highway = secondary_link]",
             "[highway = tertiary_link]",
@@ -22,15 +22,14 @@ highway = [
             "[highway = track]",
             "[highway = bus_guideway]",
             "[highway = escape]",
-            "[highway = road]",
             "[highway = busway]",
             "[highway = footway][bicycle = yes]", "[highway = footway][bicycle = no]", "[highway = footway]",
             "[highway = bridleway]",
             "[highway = steps]",
             "[highway = corridor]",
             "[highway = path]",
-            "[footway = sidewalk][bicycle = yes]", "[footway = sidewalk][bicycle = no]", "[footway = sidewalk]",
-            "[footway = crossing][bicycle = yes]", "[footway = crossing][bicycle = no]", "[footway = crossing]",
+            "[footway = sidewalk][bicycle = yes]", "[footway = sidewalk]",
+            "[footway = crossing][bicycle = yes]", "[footway = crossing]",
             "[highway = cycleway]",
             [ "[cycleway = lane]", "['cycleway:left' = lane]", "['cycleway:right' = lane]", "['cycleway:both' = lane]" ],
             [ "[cycleway = opposite]", "['cycleway:left' = opposite]", "['cycleway:right' = opposite]", "['cycleway:both' = opposite]" ],
@@ -67,6 +66,7 @@ class Highway:
                 query += "way" + infra_type + "(" + sw + "," + ne + ");"
             query += ");"
             res = api.get(query, responseformat="json")
+            pprint(res)
             return { infra_types[0]: res["elements"] }
         else:
             res = api.get("way" + infra_types + "(" + sw + "," + ne + ")", responseformat="json")
@@ -96,7 +96,6 @@ if __name__ == '__main__':
         else:
             res = api.get("way" + infra_types + "(" + sw + "," + ne + ")", responseformat="json")
             elements["features"].append( { infra_types: res["elements"] } )
-    print(len(elements["features"]))
     end = time.time()
     old_time = end - start
     print(old_time)

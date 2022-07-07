@@ -1,4 +1,4 @@
-import db
+from ..data import db
 
 
 # Function for finding the outer bounds of the legs saved to the db

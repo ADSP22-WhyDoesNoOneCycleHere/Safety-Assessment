@@ -60,7 +60,6 @@ class Highway:
             for infra_type in infra_types:
                 query = "area[name = " + country + "]->.country; area[name = " + city + "]->.city; way" + infra_type + "(area.city)(area.country);"
                 elements += api.get(query, responseformat="json")["elements"]
-            print(elements)
             return { infra_types[0]: elements }
         else:
             res = api.get("area[name = " + country + "]->.country; area[name = " + city + "]->.city; way" + infra_types + "(area.city)(area.country);", responseformat="json")

@@ -9,7 +9,7 @@ from src.app.data.highway import Highway
 leg = {}  # Dict to which the different counts are saved
 
 
-def execute_queries(cur, osm_id, infra_type):
+def execute_queries(cur, conn, osm_id, infra_type):
     query = f'Select "id", "avoidedCount", "chosenCount", "normalIncidentCount", ' \
             f'"scaryIncidentCount", "count", ST_Length(geom::geography) as length' \
             f' from "SimRaAPI_osmwayslegs" where "osmId"={osm_id};'
@@ -57,7 +57,7 @@ def osm_ids_per_infrastructure():
     return infrastructure_osm_ids
 
 
-if __name__ == '__main__':
+def main():
     conn, cur = db.connect()
     scores.add_columns(cur, conn)
     scores.initialize_infra_table(cur, conn)
@@ -70,7 +70,7 @@ if __name__ == '__main__':
         print(f"++ Working on {infra_type} with {len(osm_ids)} osm_ids")
         print(f"-> Calculating leg scores for infra type: {infra_type}")
         for osm_id in osm_ids:
-            execute_queries(cur, osm_id, infra_type)
+            execute_queries(cur, conn, osm_id, infra_type)
         print(f"-> Calculating averaged scores for infra type: {infra_type}")
         scores.calculate_scores_infra_types(infra_type, cur, conn)
 

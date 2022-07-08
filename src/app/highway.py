@@ -13,7 +13,7 @@ highway = [
             "[highway = secondary_link]",
             "[highway = tertiary_link]",
             "[highway = living_street]",
-            "[highway = living_street][~'^parking:.*$'~'.']"
+            "[highway = living_street][~'^parking:.*$'~'.']",
             "[highway = service]",
             "[highway = pedestrian]",
             "[highway = track]",
@@ -37,7 +37,7 @@ highway = [
             ["[cycleway = opposite_share_busway]", "['cycleway:left' = opposite_share_busway]", "['cycleway:right' = opposite_share_busway]", "['cycleway:both' = opposite_share_busway]"],
             ["[cycleway = shared_lane]", "['cycleway:left' = shared_lane]", "['cycleway:right' = shared_lane]", "['cycleway:both' = shared_lane]"],
             "[bicycle = designated]", "[bicycle_road = yes]", "[highway = cycleway]",
-            "[bicycle = designated][segregated = yes]"
+            "[bicycle = designated][segregated = yes]",
             "[busway = lane]",
             "[highway = construction]"
         ]

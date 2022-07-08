@@ -56,8 +56,8 @@ def calculate_scores_infra_types(infra_type, cur, conn):
             f'round(avg(c_score), 4), ' \
             f'round(avg(p_score), 4), ' \
             f'round(avg(s_score), 4), ' \
-            f'round(avg(danger_score), 4), ' \
             f'round(avg(m_p_score), 4), ' \
+            f'round(avg(danger_score), 4), ' \
             f'sum(count), ' \
             f'sum("normalIncidentCount"), ' \
             f'round(avg("normalIncidentCount"), 4), ' \

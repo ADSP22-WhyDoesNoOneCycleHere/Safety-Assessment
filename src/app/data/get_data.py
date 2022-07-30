@@ -44,9 +44,9 @@ def osm_ids_per_infrastructure(country, city):
     infrastructure_osm_ids = {}
 
     # Uncomment the lines below to query the whole relevant area (program takes ages to complete)‚
-    requested_data = query_area(country, city)
+    # requested_data = query_area(country, city)
 
-    # requested_data = test()
+    requested_data = test()
 
     for infrastructure_dict in requested_data["features"]:
         for infra_type, streets in infrastructure_dict.items():

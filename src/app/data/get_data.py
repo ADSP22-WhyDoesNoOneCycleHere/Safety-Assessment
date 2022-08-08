@@ -4,7 +4,6 @@ import json
 from pprint import pprint
 
 from src.app.data import db
-from src.app.calculation import area
 from src.app.calculation import scores
 from src.app.data.highway import Highway
 
@@ -13,7 +12,7 @@ leg = {}  # Dict to which the different counts are saved
 
 def execute_queries(cur, conn, osm_id, infra_type):
     query = f'Select "id", "avoidedCount", "chosenCount", "normalIncidentCount", ' \
-            f'"scaryIncidentCount", "count", ST_Length(geom::geography) as length' \
+            f'"scaryIncidentCount", "count", (ST_Length(geom::geography) / 1000) as length' \
             f' from "SimRaAPI_osmwayslegs" where "osmId"={osm_id};'
 
     cur.execute(query)
@@ -44,9 +43,9 @@ def osm_ids_per_infrastructure(country, city):
     infrastructure_osm_ids = {}
 
     # Uncomment the lines below to query the whole relevant area (program takes ages to complete)‚
-    requested_data = query_area(country, city)
+    # requested_data = query_area(country, city)
 
-    # requested_data = test()
+    requested_data = test()
 
     for infrastructure_dict in requested_data["features"]:
         for infra_type, streets in infrastructure_dict.items():

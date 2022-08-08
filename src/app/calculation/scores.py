@@ -1,19 +1,20 @@
 def calculate_scores_legs(leg, cur, conn):
-
     # annoying cleaning of input strings as sql cant handle some operators (:, $, etc)
     if "parking" in leg['infra_type']:
         leg["infra_type"] = "[highway = residential][parking][!cycleway]"
     leg['infra_type'] = leg['infra_type'].replace(":", "")
 
-    if leg['count'] > 0:
+    if leg['c_count'] > 0:
         leg['a_score'] = min(leg['a_count'] / leg['count'], 1)
         leg['c_score'] = min(leg['c_count'] / leg['count'], 1)
-        leg['p_score'] = ((1 - leg['a_score']) + leg['c_score']) / 2
+        leg['p_score'] = leg['c_count'] / (leg['c_count'] + leg['a_count'])
 
         # Scary incidents times 4.4 as this is the weight that was calculated for Berlin (see bachelors thesis)
-        leg['s_score'] = max(min(1 - (1 / leg['count'] * leg['length']) * (4.4 * leg['scary_incident_count'] + leg['normal_incident_count']), 1), 0)
-        leg['danger_score'] = (1 / leg['count'] * leg['length']) * (4.4 * leg['scary_incident_count'] + leg['normal_incident_count'])
-        leg['m_p_score'] = ((1 - leg['a_score']) + leg['c_score'] + leg['s_score'] * 2) / 4
+        leg['s_score'] = max(min(1 - (1 / leg['count'] * leg['length']) * (
+                    4.4 * leg['scary_incident_count'] + leg['normal_incident_count']), 1), 0)
+        leg['danger_score'] = (1 / leg['count'] * leg['length']) * (
+                    4.4 * leg['scary_incident_count'] + leg['normal_incident_count'])
+        leg['m_p_score'] = (leg['p_score'] + 2 * leg['s_score']) / 3
 
         query = f'update "SimRaAPI_osmwayslegs" ' \
                 f"set " \
@@ -46,30 +47,47 @@ def calculate_scores_infra_types(infra_type, cur, conn):
 
     query = f'insert into infra_type_scores' \
             f'(infra_type, avg_a_score, avg_c_score, avg_p_score, ' \
-            f'avg_s_score, avg_m_p_score, count, incident_count, ' \
+            f'avg_s_score, avg_m_p_score, avg_danger_score, count, incident_count, ' \
             f'avg_incident_count, scary_incident_count, ' \
             f'avg_scary_incident_count, c_count, avg_c_count, ' \
             f'a_count, avg_a_count) ' \
             f'select ' \
             f"'{infra_type}', " \
-            f'round(avg(a_score), 4), ' \
-            f'round(avg(c_score), 4), ' \
-            f'round(avg(p_score), 4), ' \
-            f'round(avg(s_score), 4), ' \
-            f'round(avg(danger_score), 4), ' \
-            f'round(avg(m_p_score), 4), ' \
-            f'sum(count), ' \
-            f'sum("normalIncidentCount"), ' \
-            f'round(avg("normalIncidentCount"), 4), ' \
-            f'sum("scaryIncidentCount"), ' \
-            f'round(avg("scaryIncidentCount"), 4), ' \
-            f'sum("chosenCount"), ' \
-            f'round(avg("chosenCount"), 4), ' \
-            f'sum("avoidedCount"), ' \
-            f'round(avg("avoidedCount"), 4) ' \
+            f'avg_a_score, ' \
+            f'avg_c_score, ' \
+            f'p_score, ' \
+            f's_score, ' \
+            f'round((p_score + 2 * s_score) / 3, 4), ' \
+            f'avg_danger_score, ' \
+            f'count, ' \
+            f'incident_count, ' \
+            f'avg_incident_count, ' \
+            f'scary_incident_count, ' \
+            f'avg_scary_incident_count, ' \
+            f'c_count, ' \
+            f'avg_c_count, ' \
+            f'a_count, ' \
+            f'avg_a_count ' \
+            f'from (' \
+            f'select ' \
+            f'sum(count) as count, ' \
+            f'round(avg(a_score), 4) as avg_a_score, ' \
+            f'round(avg(c_score), 4) as avg_c_score, ' \
+            f'sum("chosenCount") as c_count, ' \
+            f'sum("avoidedCount") as a_count, ' \
+            f'sum("normalIncidentCount") as incident_count, ' \
+            f'round(avg("normalIncidentCount"), 4) as avg_incident_count, ' \
+            f'sum("scaryIncidentCount") as scary_incident_count, ' \
+            f'round(avg("scaryIncidentCount"), 4) as avg_scary_incident_count, ' \
+            f'round(avg("chosenCount"), 4) as avg_c_count, ' \
+            f'round(avg("avoidedCount"), 4) as avg_a_count, ' \
+            f'round(avg(danger_score)) as avg_danger_score, ' \
+            f'round(sum("chosenCount")::numeric / (sum("avoidedCount")::numeric + sum("chosenCount")::numeric), 4)::numeric as p_score, ' \
+            f'round(greatest(least(1 - (1 / sum(count * (ST_Length(geom::geography)::numeric / 1000))::numeric * (4.4 * sum("scaryIncidentCount")::numeric + sum("normalIncidentCount")::numeric)), 1)::numeric, 0)::numeric, 4)::numeric as s_score ' \
             f'from "SimRaAPI_osmwayslegs" ' \
             f"where '{infra_type}' = any(infra_type)" \
-            f"and count > 0;"
+            f"and count > 0" \
+            f") f;"
 
     cur.execute(query)
     conn.commit()

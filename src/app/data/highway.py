@@ -1,5 +1,4 @@
 from multiprocessing import Pool, cpu_count
-from pprint import pprint
 
 import overpass
 
@@ -7,36 +6,37 @@ api = overpass.API(endpoint="https://overpass.kumi.systems/api/interpreter", tim
 
 
 highway = [
-            "[highway = primary]",
-            "[highway = secondary]",
-            "[highway = tertiary]",
+            "[highway = primary]", "[highway = primary][~'^parking:.*$'~'.']",
+            "[highway = secondary]", "[highway = secondary][~'^parking:.*$'~'.']",
+            "[highway = tertiary]", "[highway = tertiary][~'^parking:.*$'~'.']",
             "[highway = unclassified]",
-            "[highway = residential]", "[highway = residential][~'^parking:.*$'~'.'][!cycleway]",
-            "[highway = motorway_link]",
+            "[highway = residential]", "[highway = residential][~'^parking:.*$'~'.']",
             "[highway = primary_link]",
             "[highway = secondary_link]",
             "[highway = tertiary_link]",
-            "[highway = living_street]",
-            "[highway = service]",
+            "[highway = living_street]", "[highway = living_street][~'^parking:.*$'~'.']",
             "[highway = pedestrian]",
             "[highway = track]",
-            "[highway = busway]",
+            "[highway = road]",
             "[highway = footway][bicycle = yes]", "[highway = footway][bicycle = no]", "[highway = footway]",
-            "[highway = bridleway]",
-            "[highway = steps]",
             "[highway = path]",
-            "[footway = sidewalk][bicycle = yes]", "[footway = sidewalk]",
-            "[footway = crossing][bicycle = yes]", "[footway = crossing]",
+            "[footway = sidewalk][bicycle = yes]", "[footway = sidewalk][bicycle = yes][segregated=yes]", "[footway = sidewalk]",
             ["[cycleway = lane]", "['cycleway:left' = lane]", "['cycleway:right' = lane]", "['cycleway:both' = lane]"],
-            ["[cycleway = opposite]", "['cycleway:left' = opposite]", "['cycleway:right' = opposite]", "['cycleway:both' = opposite]"],
+            ["[cycleway = lane][~'^parking:.*$'~'.']", "['cycleway:left' = lane][~'^parking:.*$'~'.']", "['cycleway:right' = lane][~'^parking:.*$'~'.']", "['cycleway:both' = lane][~'^parking:.*$'~'.']"],
+            ["[cycleway = opposite]", "['cycleway:left' = opposite]", "['cycleway:right' = opposite]", "['cycleway:both' = oppposite]"],
+            ["[cycleway = opposite][~'^parking:.*$'~'.']", "['cycleway:left' = opposite][~'^parking:.*$'~'.']", "['cycleway:right' = opposite][~'^parking:.*$'~'.']", "['cycleway:both' = oppposite][~'^parking:.*$'~'.']"],
             ["[cycleway = opposite_lane]", "['cycleway:left' = opposite_lane]", "['cycleway:right' = opposite_lane]", "['cycleway:both' = opposite_lane]"],
-            ["[cycleway = separate]", "['cycleway:left' = separate]", "['cycleway:right' = separate]", "['cycleway:both' = separate]", "[cycleway = track]", "['cycleway:left' = track]", "['cycleway:right' = track]", "['cycleway:both' = track]"],
+            ["[cycleway = track]", "['cycleway:left' = track]", "['cycleway:right' = track]", "['cycleway:both' = track]"],
+            ["[cycleway = track][~'^parking:.*$'~'.']", "['cycleway:left' = track][~'^parking:.*$'~'.']", "['cycleway:right' = track][~'^parking:.*$'~'.']", "['cycleway:both' = track][~'^parking:.*$'~'.']"],
             ["[cycleway = opposite_track]", "['cycleway:left' = opposite_track]", "['cycleway:right' = opposite_track]", "['cycleway:both' = opposite_track]"],
             ["[cycleway = share_busway]", "['cycleway:left' = share_busway]", "['cycleway:right' = share_busway]", "['cycleway:both' = share_busway]"],
+            ["[cycleway = opposite_share_busway]", "['cycleway:left' = opposite_share_busway]", "['cycleway:right' = opposite_share_busway]", "['cycleway:both' = opposite_share_busway]"],
             ["[cycleway = shared_lane]", "['cycleway:left' = shared_lane]", "['cycleway:right' = shared_lane]", "['cycleway:both' = shared_lane]"],
-            "[bicycle = designated]", "[bicycle_road = yes]", "[highway = cycleway]",  # Might have to be put together if overlap is too big
+            "[bicycle = designated]", "[bicycle = designated][~'^parking:.*$'~'.']",
+            "[bicycle_road = yes]", "[bicycle_road = yes][~'^parking:.*$'~'.']",
+            "[highway = cycleway]",
+            "[bicycle = designated][segregated = yes]",
             "[busway = lane]",
-            "[highway = construction]"
         ]
 
 

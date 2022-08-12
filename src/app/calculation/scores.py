@@ -1,7 +1,6 @@
 def calculate_scores_legs(leg, cur, conn):
     # annoying cleaning of input strings as sql cant handle some operators (:, $, etc)
-    if "parking" in leg['infra_type']:
-        leg["infra_type"] = "[highway = residential][parking][!cycleway]"
+    leg['infra_type'] = leg['infra_type'].replace("~'^parking:.*$'~'.'", "parking")
     leg['infra_type'] = leg['infra_type'].replace(":", "")
 
     if leg['c_count'] > 0:
@@ -41,9 +40,8 @@ def calculate_scores_legs(leg, cur, conn):
 
 
 def calculate_scores_infra_types(infra_type, cur, conn):
-    if "parking" in infra_type:
-        infra_type = "[highway = residential][parking][!cycleway]"
-    infra_type = infra_type.replace(":", " ")
+    infra_type = infra_type.replace("~'^parking:.*$'~'.'", "parking")
+    infra_type = infra_type.replace(":", "")
 
     query = f'insert into infra_type_scores' \
             f'(infra_type, avg_a_score, avg_c_score, avg_p_score, ' \

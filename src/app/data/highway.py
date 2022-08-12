@@ -48,7 +48,25 @@ cycleway = [
                 "['cycleway:both' = shared_lane]"],
         ]
 
-# TODO: Think about adding highway-cycleway combinations
+highway_and_cycleway = [
+            ["[highway = primary][cycleway = track]", "[highway = primary]['cycleway:left' = track]",
+             "[highway = primary]['cycleway:right' = track]", "[highway = primary]['cycleway:both' = track]"],
+            ["[highway = secondary][cycleway = track]", "[highway = secondary]['cycleway:left' = track]",
+             "[highway = secondary]['cycleway:right' = track]", "[highway = secondary]['cycleway:both' = track]"],
+            ["[highway = tertiary][cycleway = track]", "[highway = tertiary]['cycleway:left' = track]",
+             "[highway = tertiary]['cycleway:right' = track]", "[highway = tertiary]['cycleway:both' = track]"],
+            ["[highway = residential][cycleway = track]", "[highway = residential]['cycleway:left' = track]",
+             "[highway = residential]['cycleway:right' = track]", "[highway = residential]['cycleway:both' = track]"],
+
+            ["[highway = primary][cycleway = lane]", "[highway = primary]['cycleway:left' = lane]",
+             "[highway = primary]['cycleway:right' = lane]", "[highway = primary]['cycleway:both' = lane]"],
+            ["[highway = secondary][cycleway = lane]", "[highway = secondary]['cycleway:left' = lane]",
+             "[highway = secondary]['cycleway:right' = lane]", "[highway = secondary]['cycleway:both' = lane]"],
+            ["[highway = tertiary][cycleway = lane]", "[highway = tertiary]['cycleway:left' = lane]",
+             "[highway = tertiary]['cycleway:right' = lane]", "[highway = tertiary]['cycleway:both' = lane]"],
+            ["[highway = residential][cycleway = lane]", "[highway = residential]['cycleway:left' = lane]",
+             "[highway = residential]['cycleway:right' = lane]", "[highway = residential]['cycleway:both' = lane]"],
+        ]
 
 segregated = [
         ["[bicycle = designated][segregated = yes]", "[footway = sidewalk][segregated = yes]"]
@@ -77,6 +95,7 @@ class Highway:
         features = pool.map(Highway.queries, [ (hw, country, city) for hw in segregated ])
         features += pool.map(Highway.queries_no_segregation, [ (hw, country, city) for hw in other ])
         features += pool.map(Highway.queries, [ (hw, country, city) for hw in cycleway ])
+        features += pool.map(Highway.queries, [ (hw, country, city) for hw in highway_and_cycleway ])
         features += pool.map(Highway.queries_no_cycleway, [ (hw, country, city) for hw in parking ])
         features += pool.map(Highway.queries_no_cycleway_no_parking, [ (hw, country, city) for hw in highway ])
 
@@ -96,7 +115,7 @@ class Highway:
             "area[name = " + country + "]->.country; area[name = " + city + "]->.city; "
             "(way" + infra_types + "(area.city)(area.country); "
             "- "
-            "way[~'^segregated:.*$'~'.'](area.city)(area.country););",
+            "way[~'^segregated.*$'~'.'](area.city)(area.country););",
             responseformat="json")
         return {f'{infra_types}[!segregated]': res["elements"]}
 
@@ -111,7 +130,8 @@ class Highway:
             "area[name = " + country + "]->.country; area[name = " + city + "]->.city; "
             "(way" + infra_types + "(area.city)(area.country); "
             "- "
-            "way[~'^cycleway:.*$'~'.'](area.city)(area.country););",
+            "(way[~'^cycleway.*$'~'.'](area.city)(area.country);"
+            "way[~'^cycleway:.*$'~'.'](area.city)(area.country);););",
             responseformat="json")
         return {f'{infra_types}[!cycleway]': res["elements"]}
 
@@ -127,6 +147,7 @@ class Highway:
             "(way" + infra_types + "(area.city)(area.country); "
             "- "
             "(way[~'^cycleway:.*$'~'.'](area.city)(area.country); "
+            "way[~'^cycleway.*$'~'.'](area.city)(area.country);"
             "way[~'^parking:.*$'~'.'](area.city)(area.country);););",
             responseformat="json")
         return {f'{infra_types}[!cycleway][!parking]': res["elements"]}

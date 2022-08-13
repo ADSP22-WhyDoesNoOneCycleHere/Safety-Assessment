@@ -8,10 +8,7 @@ def calculate_scores_legs(leg, cur, conn):
         leg['a_score'] = min(leg['a_count'] / leg['count'], 1)
         leg['c_score'] = min(leg['c_count'] / leg['count'], 1)
 
-        if leg['c_count'] + leg['a_count'] != 0:
-            leg['p_score'] = (1 - leg['a_count'] + (leg['c_count']) / 2)
-        else:
-            leg['p_score'] = 0.5
+        leg['p_score'] = (1 - leg['a_score'] + (leg['c_score']) / 2)
 
         # Scary incidents times 4.4 as this is the weight that was calculated for Berlin (see bachelors thesis)
         leg['s_score'] = max(min(1 - (1 / leg['count'] * leg['length']) * (

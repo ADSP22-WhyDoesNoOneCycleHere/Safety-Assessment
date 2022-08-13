@@ -6,6 +6,7 @@ from pprint import pprint
 from src.app.data import db
 from src.app.calculation import scores
 from src.app.data.highway import Highway
+from src.app.data import save_results_city
 
 leg = {}  # Dict to which the different counts are saved
 
@@ -13,7 +14,7 @@ leg = {}  # Dict to which the different counts are saved
 def execute_queries(cur, conn, osm_id, infra_type):
     query = f'Select "id", "avoidedCount", "chosenCount", "normalIncidentCount", ' \
             f'"scaryIncidentCount", "count", (ST_Length(geom::geography) / 1000) as length' \
-            f' from "SimRaAPI_osmwayslegs" where "osmId"={osm_id};'
+            f' from "SimRaAPI_osmwayslegsused" where "osmId"={osm_id};'
 
     cur.execute(query)
 
@@ -45,7 +46,7 @@ def osm_ids_per_infrastructure(country, city):
     # Uncomment the lines below to query the whole relevant area (program takes ages to complete)‚
     # requested_data = query_area(country, city)
 
-    requested_data = test()
+    requested_data = query_area(country, city)
 
     for infrastructure_dict in requested_data["features"]:
         for infra_type, streets in infrastructure_dict.items():
@@ -62,24 +63,29 @@ def main():
     scores.add_columns(cur, conn)
     scores.initialize_infra_table(cur, conn)
 
-    with open("areas.json") as f: # for docker: ./app/areas.json
-        areas = json.load(f)
-        for area in areas["areas"]:
+    areas2 = [["Deutschland", "Bern"]]
 
-            infrastructure_osm_ids = osm_ids_per_infrastructure(area[0], area[1])
+    #with open("areas.json") as f: # for docker: ./app/areas.json
+        #areas = json.load(f)
+        #for area in areas["areas"]:
+    for area in areas2:
 
-            start = time.time()
+        infrastructure_osm_ids = osm_ids_per_infrastructure(area[0], area[1])
 
-            for infra_type, osm_ids in infrastructure_osm_ids.items():
-                print(f"++ Working on {infra_type} with {len(osm_ids)} osm_ids")
-                print(f"-> Calculating leg scores for infra type: {infra_type}")
-                for osm_id in osm_ids:
-                    execute_queries(cur, conn, osm_id, infra_type)
-                print(f"-> Calculating averaged scores for infra type: {infra_type}")
-                scores.calculate_scores_infra_types(infra_type, cur, conn)
+        start = time.time()
 
-            end = time.time()
+        for infra_type, osm_ids in infrastructure_osm_ids.items():
+            print(f"++ Working on {infra_type} with {len(osm_ids)} osm_ids")
+            print(f"-> Calculating leg scores for infra type: {infra_type}")
+            for osm_id in osm_ids:
+                execute_queries(cur, conn, osm_id, infra_type)
+            print(f"-> Calculating averaged scores for infra type: {infra_type}")
+            scores.calculate_scores_infra_types(infra_type, cur, conn)
 
-            print(f'Time taken python: {end - start}')
+        save_results_city.save_infra_type_scores(area[0], area[1])
+
+        end = time.time()
+
+        print(f'Time taken python: {end - start}')
 
     db.close_connection(conn, cur)

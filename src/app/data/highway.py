@@ -49,20 +49,20 @@ class Highway:
         pool.close()
         pool.join()
 
-        return  { "features": features }
+        return { "features": features }
 
     def queries(args):
         infra_types = args[0]
         country = args[1]
         city = args[2]
         if isinstance(infra_types, list):
-            elements = [ ]
+            elements = []
             for infra_type in infra_types:
-                query = "area[name = " + country + "]->.country; area[name = " + city + "]->.city; way" + infra_type + "(area.city)(area.country);"
+                query = f'area[name = "{country}"]->.country; area[name = "{city}"]->.city; way{infra_type}(area.city)(area.country);'
                 elements += api.get(query, responseformat="json")["elements"]
             return { infra_types[0]: elements }
         else:
-            res = api.get("area[name = " + country + "]->.country; area[name = " + city + "]->.city; way" + infra_types + "(area.city)(area.country);", responseformat="json")
+            res = api.get(f'area[name = "{country}"]->.country; area[name = "{city}"]->.city; way{infra_types}(area.city)(area.country);', responseformat="json")
             return { infra_types: res["elements"] }
 
 

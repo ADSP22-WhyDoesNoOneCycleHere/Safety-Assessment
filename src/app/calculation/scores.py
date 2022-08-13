@@ -4,10 +4,14 @@ def calculate_scores_legs(leg, cur, conn):
         leg["infra_type"] = "[highway = residential][parking][!cycleway]"
     leg['infra_type'] = leg['infra_type'].replace(":", "")
 
-    if leg['c_count'] > 0:
+    if leg['count'] > 0:
         leg['a_score'] = min(leg['a_count'] / leg['count'], 1)
         leg['c_score'] = min(leg['c_count'] / leg['count'], 1)
-        leg['p_score'] = leg['c_count'] / (leg['c_count'] + leg['a_count'])
+
+        if leg['c_count'] + leg['a_count'] != 0:
+            leg['p_score'] = (1 - leg['a_count'] + (leg['c_count']) / 2)
+        else:
+            leg['p_score'] = 0.5
 
         # Scary incidents times 4.4 as this is the weight that was calculated for Berlin (see bachelors thesis)
         leg['s_score'] = max(min(1 - (1 / leg['count'] * leg['length']) * (
@@ -16,7 +20,7 @@ def calculate_scores_legs(leg, cur, conn):
                     4.4 * leg['scary_incident_count'] + leg['normal_incident_count'])
         leg['m_p_score'] = (leg['p_score'] + 2 * leg['s_score']) / 3
 
-        query = f'update "SimRaAPI_osmwayslegs" ' \
+        query = f'update "SimRaAPI_osmwayslegsused" ' \
                 f"set " \
                 f"infra_type = array_append(infra_type, '{leg['infra_type']}'), " \
                 f"a_score = {leg['a_score']}, " \
@@ -31,7 +35,7 @@ def calculate_scores_legs(leg, cur, conn):
         conn.commit()
 
     else:
-        query = f'update "SimRaAPI_osmwayslegs" ' \
+        query = f'update "SimRaAPI_osmwayslegsused" ' \
                 f'set ' \
                 f"infra_type = array_append(infra_type, '{leg['infra_type']}') " \
                 f"where id = {leg['id']};"
@@ -82,11 +86,17 @@ def calculate_scores_infra_types(infra_type, cur, conn):
             f'round(avg("chosenCount"), 4) as avg_c_count, ' \
             f'round(avg("avoidedCount"), 4) as avg_a_count, ' \
             f'round(avg(danger_score)) as avg_danger_score, ' \
-            f'round(sum("chosenCount")::numeric / (sum("avoidedCount")::numeric + sum("chosenCount")::numeric), 4)::numeric as p_score, ' \
-            f'round(greatest(least(1 - (1 / sum(count * (ST_Length(geom::geography)::numeric / 1000))::numeric * (4.4 * sum("scaryIncidentCount")::numeric + sum("normalIncidentCount")::numeric)), 1)::numeric, 0)::numeric, 4)::numeric as s_score ' \
-            f'from "SimRaAPI_osmwayslegs" ' \
+            f'case when((sum("avoidedCount")::numeric + sum("chosenCount")::numeric) != 0) ' \
+            f'then round(sum("chosenCount")::numeric / (sum("avoidedCount")::numeric + sum("chosenCount")::numeric), 4)::numeric ' \
+            f'else -1 ' \
+            f'end as p_score, ' \
+            f'case when (sum(count * (ST_Length(geom::geography)::numeric / 1000))::numeric * (4.4 * sum("scaryIncidentCount")::numeric + sum("normalIncidentCount")::numeric) != 0) ' \
+            f'then round(greatest(least(1 - (1 / sum(count * (ST_Length(geom::geography)::numeric / 1000))::numeric * (4.4 * sum("scaryIncidentCount")::numeric + sum("normalIncidentCount")::numeric)), 1)::numeric, 0)::numeric, 4)::numeric ' \
+            f'else -1 ' \
+            f'end as s_score ' \
+            f'from "SimRaAPI_osmwayslegsused" ' \
             f"where '{infra_type}' = any(infra_type)" \
-            f"and count > 0" \
+            f'and count > 0 or "avoidedCount" > 0' \
             f") f;"
 
     cur.execute(query)
@@ -94,7 +104,7 @@ def calculate_scores_infra_types(infra_type, cur, conn):
 
 
 def add_columns(cur, conn):
-    query = 'alter table "SimRaAPI_osmwayslegs" ' \
+    query = 'alter table "SimRaAPI_osmwayslegsused" ' \
             'drop column if exists a_score, ' \
             'drop column if exists c_score, ' \
             'drop column if exists p_score, ' \
@@ -106,7 +116,7 @@ def add_columns(cur, conn):
     cur.execute(query)
     conn.commit()
 
-    query = 'alter table "SimRaAPI_osmwayslegs"' \
+    query = 'alter table "SimRaAPI_osmwayslegsused"' \
             "add column if not exists a_score numeric," \
             "add column if not exists c_score numeric," \
             "add column if not exists p_score numeric," \

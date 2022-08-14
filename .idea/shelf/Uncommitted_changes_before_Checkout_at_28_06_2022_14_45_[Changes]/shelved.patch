@@ -1,0 +1,19 @@
+Index: src/app/data/get_data.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>#!/usr/bin/python\r\nimport time\r\n\r\nfrom src.app.data import db\r\nfrom src.app.calculation import area\r\nfrom src.app.calculation import scores\r\nfrom src.app.data.highway import Highway\r\n\r\nleg = {}  # Dict to which the different counts are saved\r\n\r\n\r\ndef execute_queries(cur, osm_id, infra_type):\r\n    query = f'Select \"id\", \"avoidedCount\", \"chosenCount\", \"normalIncidentCount\", ' \\\r\n            f'\"scaryIncidentCount\", \"count\", ST_Length(geom::geography) as length' \\\r\n            f' from \"SimRaAPI_osmwayslegs\" where \"osmId\"={osm_id} and count > 0;'\r\n\r\n    cur.execute(query)\r\n\r\n    for count in cur.fetchall():\r\n        leg[\"infra_type\"] = infra_type\r\n        leg[\"id\"] = count[0]\r\n        leg[\"a_count\"] = count[1]\r\n        leg[\"c_count\"] = count[2]\r\n        leg[\"normal_incident_count\"] = count[3]\r\n        leg[\"scary_incident_count\"] = count[4]\r\n        leg[\"count\"] = count[5]\r\n        leg[\"length\"] = count[6]\r\n\r\n        scores.calculate_scores_ways(leg, cur, conn)\r\n\r\n\r\ndef query_area(north, east, south, west):\r\n    return Highway.query_area(str(south) + \",\" + str(west), str(north) + \",\" + str(east))\r\n\r\n\r\n# Use this function when testing new features; query_area() queries ALL of Berlin\r\ndef test():\r\n    return Highway.query_area()\r\n\r\n\r\ndef osm_ids_per_infrastructure():\r\n    infrastructure_osm_ids = {}\r\n\r\n    # Uncomment the lines below to query the whole relevant area (program takes ages to complete)\r\n    # north, east, south, west = area.find_borders()\r\n    # requested_data = query_area(north, east, south, west)\r\n\r\n    requested_data = test()\r\n\r\n    for infrastructure_dict in requested_data[\"features\"]:\r\n        for infra_type, streets in infrastructure_dict.items():\r\n            osm_ids = []\r\n            for street_data in streets:\r\n                osm_ids.append(street_data[\"id\"])\r\n                infrastructure_osm_ids[infra_type] = osm_ids\r\n\r\n    return infrastructure_osm_ids\r\n\r\n\r\nif __name__ == '__main__':\r\n    conn, cur = db.connect()\r\n    scores.initialize_score_table(cur, conn)\r\n\r\n    infrastructure_osm_ids = osm_ids_per_infrastructure()\r\n\r\n    start = time.time()\r\n\r\n    for infra_type, osm_ids in infrastructure_osm_ids.items():\r\n        for osm_id in osm_ids:\r\n            execute_queries(cur, osm_id, infra_type)\r\n\r\n    end = time.time()\r\n\r\n    print(f'Time taken python: {end - start}')\r\n\r\n    db.close_connection(conn, cur)\r\n
+===================================================================
+diff --git a/src/app/data/get_data.py b/src/app/data/get_data.py
+--- a/src/app/data/get_data.py	
++++ b/src/app/data/get_data.py	
+@@ -29,8 +29,8 @@
+         scores.calculate_scores_ways(leg, cur, conn)
+ 
+ 
+-def query_area(north, east, south, west):
+-    return Highway.query_area(str(south) + "," + str(west), str(north) + "," + str(east))
++#def query_area(north, east, south, west):
++#    return Highway.query_area(str(south) + "," + str(west), str(north) + "," + str(east))
+ 
+ 
+ # Use this function when testing new features; query_area() queries ALL of Berlin

@@ -84,7 +84,7 @@ def calculate_scores_infra_types(infra_type, cur, conn):
             f'round(greatest(least(1 - (1 / sum(count * (ST_Length(geom::geography)::numeric / 1000))::numeric * (4.4 * sum("scaryIncidentCount")::numeric + sum("normalIncidentCount")::numeric)), 1)::numeric, 0)::numeric, 4)::numeric as s_score ' \
             f'from "SimRaAPI_osmwayslegs" ' \
             f"where '{infra_type}' = any(infra_type) " \
-            f"and count > 0" \
+            f'and count > 0 or "avoidedCount" > 0' \
             f") f;"
 
     cur.execute(query)

@@ -1,7 +1,6 @@
 def calculate_scores_legs(leg, cur, conn):
     # annoying cleaning of input strings as sql cant handle some operators (:, $, etc)
-    if "parking" in leg['infra_type']:
-        leg["infra_type"] = "[highway = residential][parking][!cycleway]"
+    leg['infra_type'] = leg['infra_type'].replace("~'^parking:.*$'~'.'", "parking")
     leg['infra_type'] = leg['infra_type'].replace(":", "")
 
     if leg['c_count'] > 0:
@@ -41,9 +40,8 @@ def calculate_scores_legs(leg, cur, conn):
 
 
 def calculate_scores_infra_types(infra_type, cur, conn):
-    if "parking" in infra_type:
-        infra_type = "[highway = residential][parking][!cycleway]"
-    infra_type = infra_type.replace(":", " ")
+    infra_type = infra_type.replace("~'^parking:.*$'~'.'", "parking")
+    infra_type = infra_type.replace(":", "")
 
     query = f'insert into infra_type_scores' \
             f'(infra_type, avg_a_score, avg_c_score, avg_p_score, ' \
@@ -78,15 +76,15 @@ def calculate_scores_infra_types(infra_type, cur, conn):
             f'sum("normalIncidentCount") as incident_count, ' \
             f'round(avg("normalIncidentCount"), 4) as avg_incident_count, ' \
             f'sum("scaryIncidentCount") as scary_incident_count, ' \
-            f'round(avg("scaryIncidentCount"), 4) as avg_scary_incident_count, ' \
+            f'round(avg("scaryIncidentCount" / count), 4) as avg_scary_incident_count, ' \
             f'round(avg("chosenCount"), 4) as avg_c_count, ' \
-            f'round(avg("avoidedCount"), 4) as avg_a_count, ' \
+            f'round(avg("avoidedCount" / count), 4) as avg_a_count, ' \
             f'round(avg(danger_score)) as avg_danger_score, ' \
             f'round(sum("chosenCount")::numeric / (sum("avoidedCount")::numeric + sum("chosenCount")::numeric), 4)::numeric as p_score, ' \
             f'round(greatest(least(1 - (1 / sum(count * (ST_Length(geom::geography)::numeric / 1000))::numeric * (4.4 * sum("scaryIncidentCount")::numeric + sum("normalIncidentCount")::numeric)), 1)::numeric, 0)::numeric, 4)::numeric as s_score ' \
             f'from "SimRaAPI_osmwayslegs" ' \
-            f"where '{infra_type}' = any(infra_type)" \
-            f"and count > 0" \
+            f"where '{infra_type}' = any(infra_type) " \
+            f'and count > 0 or "avoidedCount" > 0' \
             f") f;"
 
     cur.execute(query)
@@ -113,7 +111,7 @@ def add_columns(cur, conn):
             "add column if not exists s_score numeric," \
             "add column if not exists m_p_score numeric," \
             "add column if not exists danger_score numeric," \
-            "add column if not exists infra_type text[];"
+            "add column if not exists infra_type text[]"
 
     cur.execute(query)
     conn.commit()

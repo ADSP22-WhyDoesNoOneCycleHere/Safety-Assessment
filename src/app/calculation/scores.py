@@ -44,42 +44,33 @@ def calculate_scores_infra_types(infra_type, cur, conn):
     infra_type = infra_type.replace(":", "")
 
     query = f'insert into infra_type_scores' \
-            f'(infra_type, avg_a_score, avg_c_score, avg_p_score, ' \
-            f'avg_s_score, avg_m_p_score, avg_danger_score, count, incident_count, ' \
-            f'avg_incident_count, scary_incident_count, ' \
-            f'avg_scary_incident_count, c_count, avg_c_count, ' \
-            f'a_count, avg_a_count) ' \
+            f'(infra_type, avg_p_score, avg_s_score, avg_m_p_score, ' \
+            f'avg_danger_score, count,  avg_a_score, avg_c_score, ' \
+            f'avg_incident_count, avg_scary_incident_count, avg_c_count, ' \
+            f'avg_a_count) ' \
             f'select ' \
             f"'{infra_type}', " \
-            f'avg_a_score, ' \
-            f'avg_c_score, ' \
             f'p_score, ' \
             f's_score, ' \
             f'round((p_score + 2 * s_score) / 3, 4), ' \
             f'avg_danger_score, ' \
             f'count, ' \
-            f'incident_count, ' \
+            f'avg_a_score, ' \
+            f'avg_c_score, ' \
             f'avg_incident_count, ' \
-            f'scary_incident_count, ' \
             f'avg_scary_incident_count, ' \
-            f'c_count, ' \
             f'avg_c_count, ' \
-            f'a_count, ' \
             f'avg_a_count ' \
             f'from (' \
             f'select ' \
             f'sum(count) as count, ' \
             f'round(avg(a_score), 4) as avg_a_score, ' \
             f'round(avg(c_score), 4) as avg_c_score, ' \
-            f'sum("chosenCount") as c_count, ' \
-            f'sum("avoidedCount") as a_count, ' \
-            f'sum("normalIncidentCount") as incident_count, ' \
             f'round(avg("normalIncidentCount"), 4) as avg_incident_count, ' \
-            f'sum("scaryIncidentCount") as scary_incident_count, ' \
             f'round(avg("scaryIncidentCount"), 4) as avg_scary_incident_count, ' \
             f'round(avg("chosenCount"), 4) as avg_c_count, ' \
             f'round(avg("avoidedCount"), 4) as avg_a_count, ' \
-            f'round(avg(danger_score)) as avg_danger_score, ' \
+            f'round((1 / sum(count * (ST_Length(geom::geography)::numeric / 1000))::numeric * (4.4 * sum("scaryIncidentCount")::numeric + sum("normalIncidentCount")::numeric)), 4) as avg_danger_score, ' \
             f'round(sum("chosenCount")::numeric / (sum("avoidedCount")::numeric + sum("chosenCount")::numeric), 4)::numeric as p_score, ' \
             f'round(greatest(least(1 - (1 / sum(count * (ST_Length(geom::geography)::numeric / 1000))::numeric * (4.4 * sum("scaryIncidentCount")::numeric + sum("normalIncidentCount")::numeric)), 1)::numeric, 0)::numeric, 4)::numeric as s_score ' \
             f'from "SimRaAPI_osmwayslegs" ' \
@@ -111,7 +102,7 @@ def add_columns(cur, conn):
             "add column if not exists s_score numeric," \
             "add column if not exists m_p_score numeric," \
             "add column if not exists danger_score numeric," \
-            "add column if not exists infra_type text[]"
+            "add column if not exists infra_type text[];"
 
     cur.execute(query)
     conn.commit()
@@ -124,20 +115,16 @@ def initialize_infra_table(cur, conn):
     query = f'create table  if not exists infra_type_scores (' \
             f'id serial primary key, ' \
             f'infra_type text, ' \
-            f'avg_a_score numeric, ' \
-            f'avg_c_score numeric, ' \
             f'avg_p_score numeric, ' \
             f'avg_s_score numeric, ' \
             f'avg_m_p_score numeric, ' \
             f'avg_danger_score numeric, ' \
             f'count numeric, ' \
-            f'incident_count numeric, ' \
+            f'avg_a_score numeric, ' \
+            f'avg_c_score numeric, ' \
             f'avg_incident_count numeric, ' \
-            f'scary_incident_count numeric, ' \
             f'avg_scary_incident_count numeric, ' \
-            f'c_count numeric, ' \
             f'avg_c_count numeric, ' \
-            f'a_count numeric, ' \
             f'avg_a_count numeric);'
 
     cur.execute(query)

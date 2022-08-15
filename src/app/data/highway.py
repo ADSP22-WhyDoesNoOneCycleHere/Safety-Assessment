@@ -24,15 +24,16 @@ parking = [
             "[highway = living_street][~'^parking:.*$'~'.']",
         ]
 
-cycleway = [
+cycleway_parking = [
             ["[cycleway = lane][~'^parking:.*$'~'.']", "['cycleway:left' = lane][~'^parking:.*$'~'.']",
                 "['cycleway:right' = lane][~'^parking:.*$'~'.']", "['cycleway:both' = lane][~'^parking:.*$'~'.']"],
             ["[cycleway = opposite][~'^parking:.*$'~'.']", "['cycleway:left' = opposite][~'^parking:.*$'~'.']",
                 "['cycleway:right' = opposite][~'^parking:.*$'~'.']", "['cycleway:both' = oppposite][~'^parking:.*$'~'.']"],
             ["[cycleway = track][~'^parking:.*$'~'.']", "['cycleway:left' = track][~'^parking:.*$'~'.']",
                 "['cycleway:right' = track][~'^parking:.*$'~'.']", "['cycleway:both' = track][~'^parking:.*$'~'.']"],
+        ]
 
-
+cycleway = [
             ["[cycleway = track]", "['cycleway:left' = track]", "['cycleway:right' = track]",
                 "['cycleway:both' = track]"],
             ["[cycleway = opposite_track]", "['cycleway:left' = opposite_track]", "['cycleway:right' = opposite_track]",
@@ -94,7 +95,8 @@ class Highway:
         pool = Pool(cpu_count())
         features = pool.map(Highway.queries, [ (hw, country, city) for hw in segregated ])
         features += pool.map(Highway.queries_no_segregation, [ (hw, country, city) for hw in other ])
-        features += pool.map(Highway.queries, [ (hw, country, city) for hw in cycleway ])
+        features += pool.map(Highway.queries_no_parking, [ (hw, country, city) for hw in cycleway ])
+        features += pool.map(Highway.queries, [ (hw, country, city) for hw in cycleway_parking ])
         features += pool.map(Highway.queries, [ (hw, country, city) for hw in highway_and_cycleway ])
         features += pool.map(Highway.queries_no_cycleway, [ (hw, country, city) for hw in parking ])
         features += pool.map(Highway.queries_no_cycleway_no_parking, [ (hw, country, city) for hw in highway ])
@@ -137,7 +139,7 @@ class Highway:
 
     def queries_no_cycleway_no_parking(args):
         """
-        Removes cycleway tags from queries and retrieves the query result
+        Removes cycleway and parking tags from queries and retrieves the query result
         """
         infra_types = args[0]
         country = args[1]
@@ -148,9 +150,29 @@ class Highway:
             "- "
             "(way[~'^cycleway:.*$'~'.'](area.city)(area.country); "
             "way[~'^cycleway.*$'~'.'](area.city)(area.country);"
-            "way[~'^parking:.*$'~'.'](area.city)(area.country);););",
+            "way[~'^parking:.*$'~'.'](area.city)(area.country);"
+            "way[~'^parking.*$'~'.'](area.city)(area.country);););",
             responseformat="json")
         return {f'{infra_types}[!cycleway][!parking]': res["elements"]}
+
+    def queries_no_parking(args):
+        """
+        Removes parking tags from queries and retrieves the query result
+        """
+        infra_types = args[0]
+        country = args[1]
+        city = args[2]
+        elements = []
+        for infra_type in infra_types:
+            elements += api.get(
+                    "area[name = " + country + "]->.country; area[name = " + city + "]->.city; "
+                    "(way" + infra_type + "(area.city)(area.country);"
+                    "- "
+                    "(way[~'^parking:.*$'~'.'](area.city)(area.country);"
+                    "way[~'^parking.*$'~'.'](area.city)(area.country);););",
+                    responseformat="json")["elements"]
+
+        return {infra_types[0]: elements}
 
     def queries(args):
         infra_types = args[0]

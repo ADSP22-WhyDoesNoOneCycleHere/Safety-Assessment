@@ -114,8 +114,8 @@ class Highway:
         country = args[1]
         city = args[2]
         res = api.get(
-            "area[name = " + country + "]->.country; area[name = " + city + "]->.city; "
-            "(way" + infra_types + "(area.city)(area.country); "
+            f"area[name = '{country}']->.country; area[name = '{city}']->.city; "
+            f"(way" + infra_types + "(area.city)(area.country); "
             "- "
             "way[~'^segregated.*$'~'.'](area.city)(area.country););",
             responseformat="json")
@@ -129,7 +129,7 @@ class Highway:
         country = args[1]
         city = args[2]
         res = api.get(
-            "area[name = " + country + "]->.country; area[name = " + city + "]->.city; "
+            f"area[name = '{country}']->.country; area[name = '{city}']->.city; "
             "(way" + infra_types + "(area.city)(area.country); "
             "- "
             "(way[~'^cycleway.*$'~'.'](area.city)(area.country);"
@@ -145,7 +145,7 @@ class Highway:
         country = args[1]
         city = args[2]
         res = api.get(
-            "area[name = " + country + "]->.country; area[name = " + city + "]->.city; "
+            f"area[name = '{country}']->.country; area[name = '{city}']->.city; "
             "(way" + infra_types + "(area.city)(area.country); "
             "- "
             "(way[~'^cycleway:.*$'~'.'](area.city)(area.country); "

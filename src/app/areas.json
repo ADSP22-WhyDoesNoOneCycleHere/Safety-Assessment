@@ -1,5 +1,5 @@
 {
     "areas": [
-        [ "Deutschland", "Berlin" ]
+        [ "This is not used anymore, because python had problems to correctly load letters like Ö from the json", "Instead, change cities at get_data.py in main()"]
     ]
 }

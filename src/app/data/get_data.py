@@ -13,7 +13,7 @@ leg = {}  # Dict to which the different counts are saved
 def execute_queries(cur, conn, osm_id, infra_type):
     query = f'Select "id", "avoidedCount", "chosenCount", "normalIncidentCount", ' \
             f'"scaryIncidentCount", "count", (ST_Length(geom::geography) / 1000) as length' \
-            f' from "SimRaAPI_osmwayslegs" where "osmId"={osm_id};'
+            f' from "SimRaAPI_osmwayslegsused" where "osmId"={osm_id};'
 
     cur.execute(query)
 
@@ -26,8 +26,22 @@ def execute_queries(cur, conn, osm_id, infra_type):
         leg["scary_incident_count"] = count[4]
         leg["count"] = count[5]
         leg["length"] = count[6]
-
         scores.calculate_scores_legs(leg, cur, conn)
+
+# creates table SimRaAPI_osmwayslegsused if it does not already exist
+# this table takes all rows of SimRaAPI_osmwayslegs where count or avoidedCount is greater than 0
+def init_smaller_table(cur, conn):
+    query = "select exists (select from information_schema.tables where  table_schema = 'public' and " \
+            "table_name = 'SimRaAPI_osmwayslegsused');"
+
+    cur.execute(query)
+
+    if not cur.fetchone()[0]:
+        # The table does not exist yet, so we create it
+        query = f'SELECT * INTO public."SimRaAPI_osmwayslegsused" FROM public."SimRaAPI_osmwayslegs" WHERE count > 0 or "avoidedCount" > 0;'
+
+        cur.execute(query)
+        conn.commit()
 
 
 def query_area(country, city):
@@ -62,11 +76,15 @@ def main():
     scores.add_columns(cur, conn)
     scores.initialize_infra_table(cur, conn)
 
-    with open("areas.json") as f: # for docker: ./app/areas.json
-        areas = json.load(f)
-        for area in areas["areas"]:
+    init_smaller_table(cur, conn)
 
-            infrastructure_osm_ids = osm_ids_per_infrastructure(area[0], area[1])
+    with open("areas.json", "r", encoding='utf-8') as f: # for docker: ./app/areas.json
+        areas = json.load(f)
+        for country_city in areas["areas"]:
+            scores.add_columns(cur, conn)
+            scores.initialize_infra_table(cur, conn)
+
+            infrastructure_osm_ids = osm_ids_per_infrastructure(country_city[0], country_city[1])
 
             start = time.time()
 
@@ -77,6 +95,8 @@ def main():
                     execute_queries(cur, conn, osm_id, infra_type)
                 print(f"-> Calculating averaged scores for infra type: {infra_type}")
                 scores.calculate_scores_infra_types(infra_type, cur, conn)
+
+            scores.save_infra_type_scores(country_city[1])
 
             end = time.time()
 

@@ -4,3 +4,4 @@ overpass
 geopy
 pandas
 psycopg2
+sqlalchemy

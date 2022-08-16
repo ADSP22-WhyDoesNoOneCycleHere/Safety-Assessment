@@ -78,39 +78,28 @@ def main():
 
     init_smaller_table(cur, conn)
 
-    areas = [["Deutschland", "Augsburg"]]
-    #areas = [["Schweiz/Suisse/Svizzera/Svizra", "Bern"],
-    #          ["Deutschland", "Aachen"],
-    #          ["Deutschland", "Augsburg"],
-    #          ["Deutschland", "Bielefeld"],
-    #          ["Deutschland", "Köln"],
-    #          ["Deutschland", "Stuttgart"],
-    #          ["Deutschland", "Weimar"],
-    #          ["Österreich", "Wien"]]
+    with open("areas.json", "r", encoding='utf-8') as f: # for docker: ./app/areas.json
+        areas = json.load(f)
+        for country_city in areas["areas"]:
+            scores.add_columns(cur, conn)
+            scores.initialize_infra_table(cur, conn)
 
-    #with open("areas.json") as f: # for docker: ./app/areas.json
-        #areas = json.load(f)
-        #for area in areas["areas"]:
-    for country_city in areas:
-        scores.add_columns(cur, conn)
-        scores.initialize_infra_table(cur, conn)
+            infrastructure_osm_ids = osm_ids_per_infrastructure(country_city[0], country_city[1])
 
-        infrastructure_osm_ids = osm_ids_per_infrastructure(country_city[0], country_city[1])
+            start = time.time()
 
-        start = time.time()
+            for infra_type, osm_ids in infrastructure_osm_ids.items():
+                print(f"++ Working on {infra_type} with {len(osm_ids)} osm_ids")
+                print(f"-> Calculating leg scores for infra type: {infra_type}")
+                for osm_id in osm_ids:
+                    execute_queries(cur, conn, osm_id, infra_type)
+                print(f"-> Calculating averaged scores for infra type: {infra_type}")
+                scores.calculate_scores_infra_types(infra_type, cur, conn)
 
-        for infra_type, osm_ids in infrastructure_osm_ids.items():
-            print(f"++ Working on {infra_type} with {len(osm_ids)} osm_ids")
-            print(f"-> Calculating leg scores for infra type: {infra_type}")
-            for osm_id in osm_ids:
-                execute_queries(cur, conn, osm_id, infra_type)
-            print(f"-> Calculating averaged scores for infra type: {infra_type}")
-            scores.calculate_scores_infra_types(infra_type, cur, conn)
+            scores.save_infra_type_scores(country_city[1])
 
-        scores.save_infra_type_scores(country_city[1])
+            end = time.time()
 
-        end = time.time()
-
-        print(f'Time taken python: {end - start}')
+            print(f'Time taken python: {end - start}')
 
     db.close_connection(conn, cur)

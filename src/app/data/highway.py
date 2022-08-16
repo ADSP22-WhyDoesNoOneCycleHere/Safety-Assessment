@@ -165,7 +165,7 @@ class Highway:
         elements = []
         for infra_type in infra_types:
             elements += api.get(
-                    "area[name = " + country + "]->.country; area[name = " + city + "]->.city; "
+                    f"area[name = '{country}']->.country; area[name = '{city}']->.city; "
                     "(way" + infra_type + "(area.city)(area.country);"
                     "- "
                     "(way[~'^parking:.*$'~'.'](area.city)(area.country);"

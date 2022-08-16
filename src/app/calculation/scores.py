@@ -6,13 +6,11 @@ def calculate_scores_legs(leg, cur, conn):
     leg['infra_type'] = leg['infra_type'].replace("~'^parking:.*$'~'.'", "parking")
     leg['infra_type'] = leg['infra_type'].replace(":", "")
 
-    if leg['count'] > 0:
+    if leg['c_count'] > 0:     # if a leg was never chosen (means never taken asw well), then there is not enough data to calculate scores for this leg
         leg['a_score'] = min(leg['a_count'] / leg['count'], 1)
         leg['c_score'] = min(leg['c_count'] / leg['count'], 1)
 
-        leg['p_score'] = 0.5    # standard value when we have to avoid division by 0
-        if leg['c_count'] + leg['a_count'] != 0:
-            leg['p_score'] = leg['c_count'] / (leg['c_count'] + leg['a_count'])
+        leg['p_score'] = leg['c_count'] / (leg['c_count'] + leg['a_count'])
 
         # Scary incidents times 4.4 as this is the weight that was calculated for Berlin (see bachelors thesis)
         leg['s_score'] = max(min(1 - (1 / leg['count'] * leg['length']) * (
@@ -87,7 +85,6 @@ def calculate_scores_infra_types(infra_type, cur, conn):
             f'end as s_score ' \
             f'from "SimRaAPI_osmwayslegsused" ' \
             f"where '{infra_type}' = any(infra_type)" \
-            f'and (count > 0 or "avoidedCount" > 0) '\
             f") f;"
 
     cur.execute(query)

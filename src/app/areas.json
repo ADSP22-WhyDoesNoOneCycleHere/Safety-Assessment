@@ -1,5 +1,13 @@
 {
     "areas": [
-        ["Deutschland", "Berlin"]
+        ["Schweiz/Suisse/Svizzera/Svizra", "Bern"],
+        ["Deutschland", "Berlin"],
+        ["Deutschland", "Aachen"],
+        ["Deutschland", "Augsburg"],
+        ["Deutschland", "Bielefeld"],
+        ["Deutschland", "Köln"],
+        ["Deutschland", "Stuttgart"],
+        ["Deutschland", "Weimar"],
+        ["Österreich", "Wien"]
     ]
 }

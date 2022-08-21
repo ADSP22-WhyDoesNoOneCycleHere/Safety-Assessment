@@ -11,6 +11,14 @@ leg = {}  # Dict to which the different counts are saved
 
 
 def execute_queries(cur, conn, osm_id, infra_type):
+    """
+    Imports relevant counts from the database and stores them in a dict for later calculation
+    :param cur:
+    :param conn: connection to postgresql db
+    :param osm_id: the openstreetmap-id of the current street-segment
+    :param infra_type: the infrastructure-type of the current street-segment
+    :return:
+    """
     query = f'Select "id", "avoidedCount", "chosenCount", "normalIncidentCount", ' \
             f'"scaryIncidentCount", "count", (ST_Length(geom::geography) / 1000) as length' \
             f' from "SimRaAPI_osmwayslegsused" where "osmId"={osm_id};'
@@ -28,9 +36,15 @@ def execute_queries(cur, conn, osm_id, infra_type):
         leg["length"] = count[6]
         scores.calculate_scores_legs(leg, cur, conn)
 
-# creates table SimRaAPI_osmwayslegsused if it does not already exist
-# this table takes all rows of SimRaAPI_osmwayslegs where count or avoidedCount is greater than 0
+
 def init_smaller_table(cur, conn):
+    """
+    Creates table SimRaAPI_osmwayslegsused if it does not already exist. The table is a sub-table of SimRaAPI_osmwayslegs
+    where count or avoidedCount is greater than 0
+    :param cur:
+    :param conn: Connection to postgresql database
+    :return:
+    """
     query = "select exists (select from information_schema.tables where  table_schema = 'public' and " \
             "table_name = 'SimRaAPI_osmwayslegsused');"
 
@@ -38,22 +52,40 @@ def init_smaller_table(cur, conn):
 
     if not cur.fetchone()[0]:
         # The table does not exist yet, so we create it
-        query = f'SELECT * INTO public."SimRaAPI_osmwayslegsused" FROM public."SimRaAPI_osmwayslegs" WHERE count > 0 or "avoidedCount" > 0;'
+        query = f'SELECT * ' \
+                f'INTO public."SimRaAPI_osmwayslegsused" ' \
+                f'FROM public."SimRaAPI_osmwayslegs" ' \
+                f'WHERE count > 0 or "avoidedCount" > 0;'
 
         cur.execute(query)
         conn.commit()
 
 
 def query_area(country, city):
+    """
+    Queries the specified city for all defined infrastructure-types
+    :param country:
+    :param city:
+    :return:
+    """
     return Highway.query_area(country, city)
 
 
-# Use this function when testing new features; query_area() queries ALL of Berlin
 def test():
+    """
+    Use this function when testing. Queries all of Berlin.
+    :return:
+    """
     return Highway.query_area()
 
 
 def osm_ids_per_infrastructure(country, city):
+    """
+    Calls query_area and saves all openstreetmap-ids to each infrastructure-type they belong to
+    :param country:
+    :param city:
+    :return:
+    """
     infrastructure_osm_ids = {}
 
     # Uncomment the lines below to query the whole relevant area (program takes ages to complete)‚
@@ -78,8 +110,11 @@ def main():
 
     init_smaller_table(cur, conn)
 
-    with open("areas.json", "r", encoding='utf-8') as f: # for docker: ./app/areas.json
+    # for docker use: ./app/areas.json
+    with open("areas.json", "r", encoding='utf-8') as f:
         areas = json.load(f)
+
+        # Loops through all areas defined in areas.json
         for country_city in areas["areas"]:
             scores.add_columns(cur, conn)
             scores.initialize_infra_table(cur, conn)

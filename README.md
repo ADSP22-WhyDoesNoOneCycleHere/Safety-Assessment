@@ -3,7 +3,7 @@ This project is based on ride-data gathered by the [SimRa](https://simra-project
 
 ## Local development setup:
 1. Follow the [instructions](/doc/postgres.md) for setting up the postgres database
-2. Import the postgres dump (consists of SimRa rides mapped to openstreetmap street segments) provided [here]() by running the code below:
+2. Import the postgres dump (consists of SimRa rides mapped to openstreetmap street segments) provided [here](https://tubcloud.tu-berlin.de/s/H2AJ4iCa8J6gJMd)* by running the code below:
 ```
 gunzip -c simra.sql.gz | psql simra
 ```
@@ -18,6 +18,8 @@ python src/app/main.py
 
 To specify the areas scores should be calculated for, change [areas.json](src/app/areas.json).
 Note: Score calculation will only work for areas included in the SimRa dataset. To make sure that the areas you want are included check the [dashboard](https://simra-project.github.io/dashboard/).
+
+*For security reasons the download is protected by a password. To gain access message [@tobiasengelbrecht](https://github.com/tobiasengelbrecht) or [@vDawgg](https://github.com/vDawgg).
 
 ## Startup using [docker-compose](https://docs.docker.com/compose/):
 ```

@@ -1,7 +1,6 @@
 #!/usr/bin/python
 import time
 import json
-from pprint import pprint
 
 from src.app.data import db
 from src.app.calculation import scores

@@ -175,6 +175,10 @@ class Highway:
         return {infra_types[0]: elements}
 
     def queries(args):
+        """
+        Sends query to overpass api containing defined infra-types for defined area.
+        :return:
+        """
         infra_types = args[0]
         country = args[1]
         city = args[2]
@@ -187,7 +191,3 @@ class Highway:
         else:
             res = api.get("area[name = " + country + "]->.country; area[name = " + city + "]->.city; way" + infra_types + "(area.city)(area.country);", responseformat="json")
             return { infra_types: res["elements"] }
-
-
-if __name__ == '__main__':
-    print(Highway.query_area())

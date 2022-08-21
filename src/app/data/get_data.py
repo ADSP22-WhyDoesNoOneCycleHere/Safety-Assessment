@@ -105,10 +105,11 @@ def osm_ids_per_infrastructure(country, city):
 
 def main():
     conn, cur = db.connect()
+    
+    init_smaller_table(cur, conn)
+    
     scores.add_columns(cur, conn)
     scores.initialize_infra_table(cur, conn)
-
-    init_smaller_table(cur, conn)
 
     # for docker use: ./app/areas.json
     with open("areas.json", "r", encoding='utf-8') as f:

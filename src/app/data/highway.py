@@ -185,9 +185,14 @@ class Highway:
         if isinstance(infra_types, list):
             elements = [ ]
             for infra_type in infra_types:
-                query = "area[name = " + country + "]->.country; area[name = " + city + "]->.city; way" + infra_type + "(area.city)(area.country);"
+                query = f"area[name = '{country}']->.country; area[name = '{city}']->.city; " \
+                        f"way" + infra_type + "(area.city)(area.country);"
                 elements += api.get(query, responseformat="json")["elements"]
+
             return { infra_types[0]: elements }
+
         else:
-            res = api.get("area[name = " + country + "]->.country; area[name = " + city + "]->.city; way" + infra_types + "(area.city)(area.country);", responseformat="json")
+            res = api.get(f"area[name = '{country}']->.country; area[name = '{city}']->.city; "
+                          f"way" + infra_types + "(area.city)(area.country);", responseformat="json")
+
             return { infra_types: res["elements"] }

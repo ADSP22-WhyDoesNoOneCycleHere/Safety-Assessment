@@ -1,18 +1,28 @@
 import pandas as pd
 from sqlalchemy import create_engine
 
+
 def calculate_scores_legs(leg, cur, conn):
-    # annoying cleaning of input strings as sql cant handle some operators (:, $, etc)
+    """
+    Calculates the scores for a given leg (street-segment) and saves them to the row containing said leg
+    :param leg:
+    :param cur:
+    :param conn:
+    :return:
+    """
+
+    # annoying cleaning of input strings as sql can`t handle some operators (:, $, etc)
     leg['infra_type'] = leg['infra_type'].replace("~'^parking:.*$'~'.'", "parking")
     leg['infra_type'] = leg['infra_type'].replace(":", "")
 
-    if leg['c_count'] > 0:     # if a leg was never chosen (means never taken asw well), then there is not enough data to calculate scores for this leg
+    # if a leg was never chosen (means never taken asw well), then there is not enough data to calculate scores for this leg
+    if leg['c_count'] > 0:
         leg['a_score'] = min(leg['a_count'] / leg['count'], 1)
         leg['c_score'] = min(leg['c_count'] / leg['count'], 1)
 
         leg['p_score'] = leg['c_count'] / (leg['c_count'] + leg['a_count'])
 
-        # Scary incidents times 4.4 as this is the weight that was calculated for Berlin (see bachelors thesis)
+        # Scary incidents times 4.4 as this is the weight that was calculated for Berlin
         leg['s_score'] = max(min(1 - (1 / leg['count'] * leg['length']) * (
                     4.4 * leg['scary_incident_count'] + leg['normal_incident_count']), 1), 0)
         leg['danger_score'] = (1 / leg['count'] * leg['length']) * (
@@ -44,6 +54,14 @@ def calculate_scores_legs(leg, cur, conn):
 
 
 def calculate_scores_infra_types(infra_type, cur, conn):
+    """
+    Calculates the scores for a given infrastructure-type after all legs of said type finished calculation
+    :param infra_type:
+    :param cur:
+    :param conn:
+    :return:
+    """
+
     infra_type = infra_type.replace("~'^parking:.*$'~'.'", "parking")
     infra_type = infra_type.replace(":", "")
 
@@ -92,6 +110,13 @@ def calculate_scores_infra_types(infra_type, cur, conn):
 
 
 def add_columns(cur, conn):
+    """
+    Drops (clean-up for restart) and then adds columns needed for score calculation to table "SimRaAPI_osmwayslegsused"
+    :param cur:
+    :param conn:
+    :return:
+    """
+
     query = 'alter table "SimRaAPI_osmwayslegsused" ' \
             'drop column if exists a_score, ' \
             'drop column if exists c_score, ' \
@@ -141,10 +166,16 @@ def initialize_infra_table(cur, conn):
 
 
 def save_infra_type_scores(city):
-    alchemyEngine = create_engine('postgresql://simra:simra12345simra@localhost:5432/simra')
+    """
+    Saves table infra_type_scores to csv-file, so that the table can be reused for calculating scores of other areas
+    :param city:
+    :return:
+    """
 
-    dbConnection = alchemyEngine.connect()
+    alchemy_engine = create_engine('postgresql://simra:simra12345simra@localhost:5432/simra')
 
-    infra_types_scores_city = pd.read_sql('select * from "infra_type_scores"', dbConnection)
+    db_connection = alchemy_engine.connect()
+
+    infra_types_scores_city = pd.read_sql('select * from "infra_type_scores"', db_connection)
 
     infra_types_scores_city.to_csv(f'city_results/{city}.csv')

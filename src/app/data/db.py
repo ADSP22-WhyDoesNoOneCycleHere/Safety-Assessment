@@ -1,9 +1,10 @@
 import psycopg2
 
+# Adapted from https://www.postgresqltutorial.com/postgresql-python/connect/
+
 
 def connect():
     """ Connect to the PostgreSQL database server """
-    # from some website
     conn = None
     try:
 
@@ -18,14 +19,6 @@ def connect():
         # create a cursor
         cur = conn.cursor()
 
-        # execute a statement
-        print('PostgreSQL database version:')
-        cur.execute('SELECT version()')
-
-        # display the PostgreSQL database server version
-        db_version = cur.fetchone()
-        print(db_version)
-
         return conn, cur
 
     except (Exception, psycopg2.DatabaseError) as error:
@@ -33,7 +26,6 @@ def connect():
 
 
 def close_connection(conn, cur):
-    # from some website. Originally in connect() function
     try:
         # close the communication with the PostgreSQL
         cur.close()

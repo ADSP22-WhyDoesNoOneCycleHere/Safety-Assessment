@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import time
 import json
+from pathlib import Path
 
 from src.app.data import db
 from src.app.calculation import scores
@@ -87,10 +88,10 @@ def osm_ids_per_infrastructure(country, city):
     """
     infrastructure_osm_ids = {}
 
-    # Uncomment the lines below to query the whole relevant area (program takes ages to complete)‚
-    # requested_data = query_area(country, city)
+    requested_data = query_area(country, city)
 
-    requested_data = test()
+    # Uncomment the line below to only query Berlin
+    # requested_data = test()
 
     for infrastructure_dict in requested_data["features"]:
         for infra_type, streets in infrastructure_dict.items():
@@ -110,8 +111,8 @@ def main():
     scores.add_columns(cur, conn)
     scores.initialize_infra_table(cur, conn)
 
-    # for docker use: ./app/areas.json
-    with open("areas.json", "r", encoding='utf-8') as f:
+    path = Path(__file__).parent / "../areas.json"
+    with open(path, "r", encoding='utf-8') as f:
         areas = json.load(f)
 
         # Loops through all areas defined in areas.json

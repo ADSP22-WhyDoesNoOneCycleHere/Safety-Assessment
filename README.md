@@ -11,7 +11,8 @@ gunzip -c simra.sql.gz | psql simra
 ```
 pip install -r src/requirements.txt 
 ```
-4. Run the code:
+4. Add the project to your [PYTHONPATH](https://docs.python.org/3/using/cmdline.html#envvar-PYTHONPATH).
+5. Run the code:
 ```
 python src/app/main.py
 ```

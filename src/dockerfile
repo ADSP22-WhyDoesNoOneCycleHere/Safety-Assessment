@@ -1,7 +1,18 @@
-FROM python:slim
+FROM python:slim-buster
 
-COPY . .
+COPY .. .
+
+WORKDIR .
+
+RUN apt-get update \
+    && apt-get -y install libpq-dev gcc
 
 RUN pip install -r requirements.txt
 
-CMD [ "python3", "./app/main.py" ]
+RUN pip install jupyterlab
+
+ENV PYTHONPATH "${PYTHONPATH}:/"
+
+RUN python ./app/main.py
+
+CMD ["python-lab"]

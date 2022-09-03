@@ -23,9 +23,16 @@ Note: Score calculation will only work for areas included in the SimRa dataset. 
 *For security reasons the download is protected by a password. To gain access message [@tobiasengelbrecht](https://github.com/tobiasengelbrecht) or [@vDawgg](https://github.com/vDawgg).
 
 ## Startup using [docker-compose](https://docs.docker.com/compose/):
+1. Unzip the database and place it in the db folder
+2. Make sure the areas included in areas.json fit your needs (running more areas than necessary will take a long time)
+2. Run the following to start the database and a python container with jupyter notebook
 ```
-docker-compose up
+docker-compose up -d
 ```
+3. Once inside the notebook run the first cell to start the import process. On first startup it will take some time until you are able to run the importer, as the db is being imported. Make sure to download the results and graphics for later use. If you want to look at different areas, adapt areas.json and run `docker-comopse up --rebuild safety_assessment`.
+
+*Note*: This is intended as a version for easier setup. If you only want to look at the results in the notebook this is fine.
+Otherwise, we recommend using the setup above.
 
 ## Project structure:
 ```

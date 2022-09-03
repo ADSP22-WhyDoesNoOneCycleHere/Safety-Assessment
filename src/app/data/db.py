@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 import psycopg2
 
 # Adapted from https://www.postgresqltutorial.com/postgresql-python/connect/
@@ -5,13 +7,15 @@ import psycopg2
 
 def connect():
     """ Connect to the PostgreSQL database server """
+
+    load_dotenv()
+
     conn = None
     try:
-
+        print("Connecting to db...")
         # connect to the PostgreSQL server
-        print('Connecting to the PostgreSQL database...')
         conn = psycopg2.connect(
-            host="localhost",
+            host=os.getenv("POSTGRES_HOST"),
             database="simra",
             user="simra",
             password="simra12345simra")
@@ -22,7 +26,7 @@ def connect():
         return conn, cur
 
     except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
+        print("Did you specify the correct adress in the .env file?\n", error)
 
 
 def close_connection(conn, cur):

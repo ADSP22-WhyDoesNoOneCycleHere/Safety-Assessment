@@ -5,3 +5,4 @@ geopy
 pandas
 psycopg2
 sqlalchemy
+python-dotenv

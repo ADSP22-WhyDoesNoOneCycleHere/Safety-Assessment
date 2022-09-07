@@ -29,7 +29,7 @@ Note: Score calculation will only work for areas included in the SimRa dataset. 
 ```
 docker-compose up -d
 ```
-3. Once inside the notebook run the first cell to start the import process. On first startup it will take some time until you are able to run the importer, as the db is being imported. Make sure to download the results and graphics for later use. If you want to look at different areas, adapt areas.json and run `docker-comopse up --rebuild safety_assessment`.
+3. Access the notebook at [localhost:8888](http://localhost:8888). Once inside the notebook run the first cell to start the import process. On first startup it will take some time until you are able to run the importer, as the db is being imported. Make sure to download the results and graphics for later use. If you want to look at different areas, adapt areas.json and run `docker-comopse up --rebuild safety_assessment`.
 
 *Note*: This is intended as a version for easier setup. If you only want to look at the results in the notebook this is fine.
 Otherwise, we recommend using the setup above.

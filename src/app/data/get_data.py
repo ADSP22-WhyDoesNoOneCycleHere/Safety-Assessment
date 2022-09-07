@@ -117,6 +117,8 @@ def main():
 
         # Loops through all areas defined in areas.json
         for country_city in areas["areas"]:
+            print(f"Querying for infrastructure-types in {country_city[1]}")
+
             scores.add_columns(cur, conn)
             scores.initialize_infra_table(cur, conn)
 

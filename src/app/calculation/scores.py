@@ -1,4 +1,8 @@
+import os
+from pathlib import Path
+
 import pandas as pd
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 
 
@@ -172,10 +176,12 @@ def save_infra_type_scores(city):
     :return:
     """
 
-    alchemy_engine = create_engine('postgresql://simra:simra12345simra@localhost:5432/simra')
+    load_dotenv()
+
+    alchemy_engine = create_engine(f'postgresql://simra:simra12345simra@{os.getenv("POSTGRES_HOST")}:5432/simra')
 
     db_connection = alchemy_engine.connect()
 
     infra_types_scores_city = pd.read_sql('select * from "infra_type_scores"', db_connection)
 
-    infra_types_scores_city.to_csv(f'city_results/{city}.csv')
+    infra_types_scores_city.to_csv(Path(__file__).parent / f"../city_results/{city}.csv")

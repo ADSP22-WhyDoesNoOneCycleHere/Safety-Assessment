@@ -34,7 +34,14 @@ docker-compose up -d
 *Note*: This is intended as a version for easier setup. If you only want to look at the results in the notebook this is fine.
 Otherwise, we recommend using the setup above.
 
-## Project structure:
+## Environment Variables:
+| Key            | Value                                           |
+|----------------|-------------------------------------------------|
+| POSTGRES_HOST  | 'localhost' ('simra_db' when running in docker) |
+
+The .env file should be in the Safety-Assessment directory.
+
+## Project Structure:
 ```
 > doc                   // Further documentation, already linked to here
 > notebooks             // notebook for visualizing and analyzing the results
